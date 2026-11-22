@@ -402,4 +402,5 @@ export const vi = {
     straightenMore: (f: string) => `Duỗi ${f} nhiều hơn`,
   },
   stats: { streak: 'ngày liên tiếp', xp: 'điểm XP', hearts: 'tim' },
+  learnTransition: { go: 'Đi học thôi!' },
 } as const;
