@@ -1,0 +1,903 @@
+From 58893603b402ba362b298983f9e10dd105006483 Mon Sep 17 00:00:00 2001
+From: iceruychi-netizen <iceruychi-netizen@users.noreply.github.com>
+Date: Sun, 22 Nov 2026 17:16:11 +0000
+Subject: [PATCH] feat(learn): candy-map learning path (winding candy road,
+ glossy lesson sweets, three unit worlds)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Road through all lessons, striped where already learned; lessons as round candies
+  (number, gold + star when done, lock when closed), "Học tiếp!" bubble on the next one
+- Unit worlds (strawberry, mint, grape) with ribbon banner, progress counter, finish trophy
+  and side decorations from a fixed seed (candyLayout.ts, pure + tested)
+- Goal, sync and legend as candy cards above the map
+- Same behaviour: statuses from lessonStatus, details card (role=group, Esc closes,
+  Bắt đầu / Học lại link, locked hint), daily goal progressbar
+- Colours only in tokens.css; texts in i18n/vi.ts
+
+Not yet run here: pnpm lint / test / typecheck and E2E (no npm access on the agent machine).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01M142gMwM71eXgrGgPnZBKr
+---
+ docs/07_MASTER_PLAN.md                        |   1 +
+ .../src/features/skill-tree/CandyDecor.tsx    | 105 ++++++
+ .../src/features/skill-tree/SkillNode.tsx     |  41 +--
+ .../src/features/skill-tree/SkillTree.tsx     | 322 ++++++++++++------
+ .../features/skill-tree/candyLayout.test.ts   |  53 +++
+ .../src/features/skill-tree/candyLayout.ts    |  98 ++++++
+ frontend/src/i18n/vi.ts                       |  11 +
+ frontend/src/index.css                        |  53 +++
+ frontend/src/styles/tokens.css                |  57 ++++
+ 9 files changed, 611 insertions(+), 130 deletions(-)
+ create mode 100644 frontend/src/features/skill-tree/CandyDecor.tsx
+ create mode 100644 frontend/src/features/skill-tree/candyLayout.test.ts
+ create mode 100644 frontend/src/features/skill-tree/candyLayout.ts
+
+diff --git a/docs/07_MASTER_PLAN.md b/docs/07_MASTER_PLAN.md
+index b5d40f6..1f8455d 100644
+--- a/docs/07_MASTER_PLAN.md
++++ b/docs/07_MASTER_PLAN.md
+@@ -247,6 +247,7 @@ Phase 2 và phần còn lại của Phase 3 (Skill Tree, Lesson Player đầy đ
+ | ☐ | P5-11 | E2E đăng nhập giả (Supabase giả lập) và privacy E2E cho trạng thái đã đăng nhập | `e2e/` | AC-PRIV-01, AC-ACC-03 |
+ | ☐ | P5-12 | Trước khi có người dùng thật: bật lại "Confirm email" + SMTP riêng; cân nhắc giới hạn XP/ngày, lọc tên hiển thị | Supabase, `sync/` | — |
+ | ☑ | P5-13 | Bảng xếp hạng khi chưa đăng nhập chỉ tới `/login` (trước là Hồ sơ); trang Cách hoạt động và Giới thiệu bỏ nhắc Google, chỉ tới nút Đăng nhập | `i18n/vi.ts`, `features/leaderboard`, `features/onboarding` | Unit ✅ |
++| ◐ | P5-14 | Lộ trình học kiểu bản đồ kẹo: đường kẹo uốn lượn, viên kẹo bài học (số, sao, khóa), 3 vùng màu theo cấp, biển cấp + thanh đếm, cúp đích, trang trí hai bên (seed cố định), thẻ Mục tiêu/Đồng bộ/Chú thích; giữ nguyên trạng thái, ô chi tiết, phím Esc, mục tiêu ngày | `features/skill-tree/*` (`candyLayout.ts`, `CandyDecor.tsx`), `styles/tokens.css`, `index.css`, `i18n/vi.ts` | `candyLayout.test.ts` (đã chạy thật bằng tsc + node: đạt). **Chưa chạy** `pnpm lint/test/typecheck` và E2E a11y (máy agent không cài được npm); cần chạy trước khi merge. Vượt mức 100 dòng/task |
+ 
+ **3 lớp kiểm thử Phase 4:** Unit = micro-benchmark normalizer/classifier (< 2 ms) · Integration = worker ↔ engine protocol; ONNX quantized parity · E2E = perf 60 s, privacy, a11y, dữ liệu cục bộ, smoke trên production.
+ 
+diff --git a/frontend/src/features/skill-tree/CandyDecor.tsx b/frontend/src/features/skill-tree/CandyDecor.tsx
+new file mode 100644
+index 0000000..3ce96f5
+--- /dev/null
++++ b/frontend/src/features/skill-tree/CandyDecor.tsx
+@@ -0,0 +1,105 @@
++import type { DecorKind } from './candyLayout';
++
++const W = 'var(--candy-white)';
++const color = (n: number) => `var(--c${n})`;
++
++/** One decorative sweet beside the road. Purely visual: hidden from assistive technology. */
++export function CandyDecor({ kind, c1, c2, width, height }: { kind: DecorKind; c1: number; c2: number; width: number; height: number }) {
++  const a = color(c1);
++  const b = color(c2);
++  const svg = { width, height, 'aria-hidden': true as const, focusable: false as const };
++  switch (kind) {
++    case 'lolly':
++      return (
++        <svg viewBox="0 0 60 120" {...svg}>
++          <rect x="27" y="52" width="6" height="66" rx="3" fill={W} />
++          <circle cx="30" cy="30" r="27" fill={a} stroke={W} strokeWidth="3" />
++          <path d="M30 30 m0 -4 a4 4 0 1 1 -4 4 a8 8 0 1 1 8 8 a12 12 0 1 1 -12 -12 a16 16 0 1 1 16 16" fill="none" stroke={b} strokeWidth="4.5" strokeLinecap="round" />
++          <ellipse cx="20" cy="17" rx="7" ry="4" fill={W} opacity="0.7" />
++        </svg>
++      );
++    case 'cane':
++      return (
++        <svg viewBox="0 0 44 110" {...svg}>
++          <path d="M30 106 V32 a12 12 0 0 0 -24 0" fill="none" stroke={W} strokeWidth="11" strokeLinecap="round" />
++          <path d="M30 106 V32 a12 12 0 0 0 -24 0" fill="none" stroke={a} strokeWidth="11" strokeDasharray="7 7" />
++        </svg>
++      );
++    case 'donut':
++      return (
++        <svg viewBox="0 0 64 64" {...svg}>
++          <circle cx="32" cy="34" r="19" fill="none" stroke="var(--candy-dough)" strokeWidth="24" />
++          <circle cx="32" cy="31" r="18" fill="none" stroke={a} strokeWidth="18" />
++          <g strokeWidth="3" strokeLinecap="round">
++            <path d="M18 20l4 2" stroke={W} /><path d="M42 16l3 3" stroke="var(--candy-sprinkle-1)" />
++            <path d="M48 32l1 4" stroke="var(--candy-sprinkle-2)" /><path d="M16 38l3-3" stroke="var(--candy-sprinkle-1)" />
++            <path d="M34 46l4 1" stroke={W} /><path d="M26 12l4-1" stroke="var(--candy-sprinkle-2)" />
++          </g>
++        </svg>
++      );
++    case 'cupcake':
++      return (
++        <svg viewBox="0 0 64 76" {...svg}>
++          <path d="M12 40 L52 40 L46 74 L18 74 Z" fill={b} stroke={W} strokeWidth="2.5" />
++          <path d="M22 41 L24 73 M32 41 V73 M42 41 L40 73" stroke={W} strokeWidth="2" opacity="0.7" />
++          <path d="M8 42 C2 30 14 22 20 24 C20 12 34 8 40 16 C48 10 62 20 56 30 C64 34 60 44 52 42 Z" fill={a} stroke={W} strokeWidth="2.5" />
++          <circle cx="34" cy="10" r="6" fill="var(--candy-cherry)" stroke={W} strokeWidth="2" />
++        </svg>
++      );
++    case 'icecream':
++      return (
++        <svg viewBox="0 0 56 100" {...svg}>
++          <path d="M12 46 L44 46 L28 98 Z" fill="var(--candy-cone)" stroke={W} strokeWidth="2.5" />
++          <path d="M16 56 L38 76 M40 56 L20 80 M22 46 L36 88" stroke="var(--candy-cone-line)" strokeWidth="1.6" />
++          <circle cx="28" cy="38" r="17" fill={b} stroke={W} strokeWidth="2.5" />
++          <circle cx="28" cy="18" r="14" fill={a} stroke={W} strokeWidth="2.5" />
++          <ellipse cx="22" cy="13" rx="5" ry="3" fill={W} opacity="0.7" />
++        </svg>
++      );
++    case 'house':
++      return (
++        <svg viewBox="0 0 90 90" {...svg}>
++          <rect x="16" y="40" width="58" height="46" rx="6" fill="var(--candy-cookie)" stroke={W} strokeWidth="3" />
++          <path d="M6 44 L45 8 L84 44 Z" fill={a} stroke={W} strokeWidth="3" strokeLinejoin="round" />
++          <path d="M16 44 q5 6 10 0 q5 6 10 0 q5 6 10 0 q5 6 10 0 q5 6 10 0 q4 6 8 0" fill="none" stroke={W} strokeWidth="3" strokeLinecap="round" />
++          <rect x="38" y="58" width="16" height="28" rx="8" fill={b} />
++          <rect x="22" y="54" width="12" height="12" rx="3" fill={W} />
++          <rect x="58" y="54" width="12" height="12" rx="3" fill={W} />
++          <circle cx="45" cy="30" r="6" fill={W} />
++        </svg>
++      );
++    case 'tree':
++      return (
++        <svg viewBox="0 0 80 110" {...svg}>
++          <rect x="35" y="58" width="10" height="50" rx="5" fill={W} />
++          <path d="M35 66 L45 74 M35 82 L45 90 M35 98 L45 106" stroke={b} strokeWidth="3" />
++          <g fill={a} stroke={W} strokeWidth="3"><circle cx="40" cy="30" r="24" /><circle cx="20" cy="46" r="17" /><circle cx="60" cy="46" r="17" /></g>
++          <ellipse cx="32" cy="20" rx="8" ry="5" fill={W} opacity="0.6" />
++        </svg>
++      );
++    case 'gum':
++      return (
++        <svg viewBox="0 0 60 50" {...svg}>
++          <path d="M6 46 C6 14 18 4 30 4 C42 4 54 14 54 46 Z" fill={a} stroke={W} strokeWidth="3" />
++          <ellipse cx="22" cy="18" rx="6" ry="4" fill={W} opacity="0.65" />
++          <circle cx="34" cy="30" r="2" fill={W} /><circle cx="22" cy="34" r="2" fill={W} /><circle cx="42" cy="38" r="2" fill={W} />
++        </svg>
++      );
++  }
++}
++
++export function Cloud({ width }: { width: number }) {
++  return (
++    <svg viewBox="0 0 120 60" width={width} height={width / 2} aria-hidden="true" focusable="false">
++      <g fill={W}><ellipse cx="38" cy="38" rx="30" ry="18" /><ellipse cx="64" cy="28" rx="28" ry="22" /><ellipse cx="88" cy="40" rx="26" ry="16" /></g>
++    </svg>
++  );
++}
++
++export function Sparkle({ size }: { size: number }) {
++  return (
++    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" focusable="false">
++      <path d="M12 1 14.4 9.6 23 12l-8.6 2.4L12 23l-2.4-8.6L1 12l8.6-2.4z" fill={W} />
++    </svg>
++  );
++}
+diff --git a/frontend/src/features/skill-tree/SkillNode.tsx b/frontend/src/features/skill-tree/SkillNode.tsx
+index 7789d6a..6e65228 100644
+--- a/frontend/src/features/skill-tree/SkillNode.tsx
++++ b/frontend/src/features/skill-tree/SkillNode.tsx
+@@ -1,28 +1,24 @@
+-import type { ComponentType, SVGProps } from 'react';
+-import { LockIcon, PlayIcon, SparkleIcon, StarIcon } from '@/components/ui/Icons';
++import { LockIcon } from '@/components/ui/Icons';
+ import { vi } from '@/i18n/vi';
+ import type { LessonStatus } from '@/game/unlock';
+ 
+-const STYLE: Record<LessonStatus, string> = {
+-  locked: 'border-border bg-surface-2 text-text-muted shadow-[0_4px_0_var(--border)]',
+-  available: 'node-available node-halo border-surface text-ink-on-pink hover:-translate-y-0.5',
+-  in_progress: 'border-warning-fg bg-warning-bg text-warning-fg shadow-[0_4px_0_var(--border-strong)] hover:-translate-y-0.5',
+-  completed: 'border-success-fg bg-success-bg text-success-fg shadow-[0_4px_0_var(--border)] hover:-translate-y-0.5',
++/** Candy look per status; in_progress shares the "open" candy since the lesson can be continued. */
++const LOOK: Record<LessonStatus, { node: string; num: string }> = {
++  locked: { node: 'candy-node-locked cursor-not-allowed', num: '' },
++  available: { node: 'candy-node-available cursor-pointer', num: 'candy-num-available' },
++  in_progress: { node: 'candy-node-available cursor-pointer', num: 'candy-num-available' },
++  completed: { node: 'candy-node-completed cursor-pointer', num: 'candy-num-completed' },
+ };
+ 
+-const ICON: Record<LessonStatus, ComponentType<SVGProps<SVGSVGElement>>> = {
+-  locked: LockIcon,
+-  available: PlayIcon,
+-  in_progress: SparkleIcon,
+-  completed: StarIcon,
+-};
+-
+-/** One lesson on the path. The status is always spelled out in the accessible name, never only by colour. */
+-export function SkillNode({ title, status, expanded, onSelect }: {
+-  title: string; status: LessonStatus; expanded: boolean; onSelect: () => void;
++/**
++ * One lesson on the candy map: a round glossy sweet with the lesson number (a lock when closed).
++ * The status is always spelled out in the accessible name, never only by colour.
++ */
++export function SkillNode({ title, status, expanded, onSelect, number, big = false }: {
++  title: string; status: LessonStatus; expanded: boolean; onSelect: () => void; number: number; big?: boolean;
+ }) {
+   const locked = status === 'locked';
+-  const Icon = ICON[status];
++  const look = LOOK[status];
+   return (
+     <button
+       type="button"
+@@ -30,9 +26,14 @@ export function SkillNode({ title, status, expanded, onSelect }: {
+       aria-expanded={expanded}
+       data-status={status}
+       onClick={onSelect}
+-      className={`flex size-[4.5rem] cursor-pointer items-center justify-center rounded-full border-4 transition-[transform,box-shadow] duration-(--motion-fast) active:translate-y-1 active:shadow-none ${STYLE[status]} ${locked ? 'cursor-not-allowed active:translate-y-0' : ''}`}
++      className={`candy-node relative flex shrink-0 items-center justify-center overflow-hidden rounded-full p-0 transition-transform duration-(--motion-fast) ${big ? 'size-[6.5rem]' : 'size-[5.625rem]'} ${look.node} ${locked ? '' : 'hover:-translate-y-1 hover:scale-105 active:translate-y-1'}`}
+     >
+-      <Icon className="size-7" />
++      <span aria-hidden="true" className="absolute left-[18%] top-[12%] h-[20%] w-[34%] -rotate-[25deg] rounded-full bg-surface/55" />
++      {locked ? (
++        <LockIcon className="relative size-8" />
++      ) : (
++        <span aria-hidden="true" className={`relative font-black leading-none ${big ? 'text-5xl' : 'text-[2.4rem]'} ${look.num}`}>{number}</span>
++      )}
+     </button>
+   );
+ }
+diff --git a/frontend/src/features/skill-tree/SkillTree.tsx b/frontend/src/features/skill-tree/SkillTree.tsx
+index 65f32dd..5d0061d 100644
+--- a/frontend/src/features/skill-tree/SkillTree.tsx
++++ b/frontend/src/features/skill-tree/SkillTree.tsx
+@@ -1,17 +1,17 @@
+ import { useEffect, useMemo, useState } from 'react';
+ import { Link } from 'react-router';
+ import { loadActiveManifest } from '@/app/staticData';
+-import { Button } from '@/components/ui/Button';
+-import { Card } from '@/components/ui/Card';
+-import { BoltIcon, PlayIcon, ShieldLockIcon } from '@/components/ui/Icons';
++import { BoltIcon, LockIcon, PlayIcon, ShieldLockIcon, StarIcon, TrophyIcon } from '@/components/ui/Icons';
+ import { ProgressBar } from '@/components/ui/ProgressBar';
+ import curriculumJson from '@/content/curriculum.json';
+ import { loadCurriculum } from '@/content/loader';
+-import type { Curriculum } from '@/content/types';
++import type { Curriculum, Lesson } from '@/content/types';
+ import { dateKey } from '@/game/streak';
+ import { lessonStatus } from '@/game/unlock';
+ import { vi } from '@/i18n/vi';
+ import { useLearner } from '@/storage/useLearner';
++import { CandyDecor, Cloud, Sparkle } from './CandyDecor';
++import { DECOR_SIZE, layoutMap, roadPath } from './candyLayout';
+ import { SkillNode } from './SkillNode';
+ 
+ export type LearnData = { curriculum: Curriculum; model: { model_id: string; version: string } };
+@@ -21,10 +21,21 @@ export async function loadLearnData(): Promise<LearnData> {
+   return { curriculum: loadCurriculum(curriculumJson, manifest.labels), model: { model_id: manifest.model_id, version: manifest.version } };
+ }
+ 
+-const ZIGZAG = [0, 1, 2, 1, 0, -1, -2, -1];
+-const STEP_PX = 34;
++/** Approximate lane width in px per 1 % of x, used to keep a lesson's details card inside the lane. */
++const LANE_PX_PER_PCT = 6.6;
++const MAX_CHIPS = 6;
+ 
+-/** Learning path: Duolingo-style units with zig-zag rose-pink lesson nodes and daily goal sidebar. */
++/** The signs a lesson practises, in order, from its items (no content is invented here). */
++function lessonGlosses(lesson: Lesson, glossOf: Map<string, string>): string[] {
++  const out: string[] = [];
++  for (const item of [...lesson.items].sort((a, b) => a.order - b.order)) {
++    const g = item.sign_code ? glossOf.get(item.sign_code) : undefined;
++    if (g && !out.includes(g)) out.push(g);
++  }
++  return out;
++}
++
++/** Learning path as a candy map: a winding road through three unit worlds, lessons as glossy sweets. */
+ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { load?: () => Promise<LearnData>; now?: () => Date }) {
+   const progress = useLearner((s) => s.progress);
+   const daily = useLearner((s) => s.daily);
+@@ -42,116 +53,207 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
+   }, [load]);
+ 
+   const today = daily[dateKey(now(), tz)]?.xp_earned ?? 0;
+-  const units = useMemo(() => [...(data?.curriculum.units ?? [])].sort((a, b) => a.order - b.order), [data]);
++  const units = useMemo(
++    () => [...(data?.curriculum.units ?? [])].sort((a, b) => a.order - b.order).map((u) => ({ ...u, lessons: [...u.lessons].sort((a, b) => a.order - b.order) })),
++    [data],
++  );
++  const glossOf = useMemo(() => new Map((data?.curriculum.signs ?? []).map((s): [string, string] => [s.code, s.gloss])), [data]);
++  const map = useMemo(() => layoutMap(units.map((u) => u.lessons.length)), [units]);
+ 
++  const flat = units.flatMap((u) => u.lessons);
++  const statuses = flat.map((l) => lessonStatus(l, progress));
++  const firstOpen = statuses.findIndex((s) => s === 'available' || s === 'in_progress');
++  const lastDone = statuses.reduce((acc, s, i) => (s === 'completed' ? i : acc), -1);
++  const doneUntil = Math.max(lastDone, firstOpen);
++  const road = roadPath(map.points);
++  const roadDone = doneUntil > 0 ? roadPath(map.points.slice(0, doneUntil + 1)) : '';
++
++  let g = 0;
+   return (
+-    <section className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[1fr_19rem]">
+-      <div className="flex flex-col gap-10">
+-        <h1 className="sr-only">{t.title}</h1>
+-        {failed && <p role="alert" className="rounded-2xl bg-danger-bg p-4 font-bold text-danger-on-bg">{t.loadError}</p>}
+-        {!data && !failed && <p className="text-text-muted">{t.loading}</p>}
+-        {units.map((unit) => {
+-          const sortedLessons = [...unit.lessons].sort((a, b) => a.order - b.order);
+-          const doneCount = sortedLessons.filter((l) => lessonStatus(l, progress) === 'completed').length;
+-          return (
+-            <section key={unit.code} aria-labelledby={`unit-${unit.code}`} className="flex flex-col items-center gap-6">
+-              <div className="unit-banner flex w-full flex-col gap-1.5 rounded-3xl px-6 py-5 text-ink-on-pink">
+-                <div className="flex flex-wrap items-center justify-between gap-2">
+-                  <p className="w-fit rounded-full bg-surface/75 px-3 py-0.5 text-xs font-extrabold uppercase tracking-widest text-ink-on-pink">
+-                    {t.level(unit.level)}
+-                  </p>
+-                  <span className="rounded-full bg-surface/75 px-3 py-0.5 text-xs font-extrabold tabular-nums text-ink-on-pink">
+-                    {doneCount} / {sortedLessons.length} bài
+-                  </span>
+-                </div>
+-                <h2 id={`unit-${unit.code}`} className="text-2xl font-black tracking-tight">{unit.title}</h2>
+-              </div>
+-              <ol className="flex w-full flex-col items-center gap-5 py-1">
+-                {sortedLessons.map((lesson, i) => {
+-                  const status = lessonStatus(lesson, progress);
+-                  const expanded = open === lesson.code;
+-                  const isFirstAvailable = status === 'available' && sortedLessons.findIndex((l) => lessonStatus(l, progress) === 'available') === i;
+-                  return (
+-                    <li key={lesson.code} className="relative flex flex-col items-center gap-2.5" style={{ transform: `translateX(${ZIGZAG[i % ZIGZAG.length] * STEP_PX}px)` }}>
+-                      {i > 0 && (
+-                        <span
+-                          aria-hidden="true"
+-                          className={`-mt-2 mb-0.5 h-4 w-1.5 rounded-full ${status === 'locked' ? 'bg-border' : 'bg-brand-300'}`}
+-                        />
+-                      )}
+-                      {isFirstAvailable && !expanded && (
+-                        <span
+-                          aria-hidden="true"
+-                          className="float-bob rounded-full border-2 border-brand-200 bg-surface px-3 py-0.5 text-[11px] font-black uppercase tracking-wider text-brand-fg shadow-[0_2px_0_var(--brand-200)]"
+-                        >
+-                          Học tiếp
+-                        </span>
+-                      )}
+-                      <SkillNode title={lesson.title} status={status} expanded={expanded} onSelect={() => setOpen(expanded ? null : lesson.code)} />
+-                      <span className={`text-xs font-extrabold ${status === 'locked' ? 'text-text-muted' : 'text-text'}`}>
+-                        {lesson.title}
+-                      </span>
+-                      {expanded && (
+-                        <Card
+-                          role="group"
+-                          aria-label={t.popover(lesson.title)}
+-                          onKeyDown={(e) => e.key === 'Escape' && setOpen(null)}
+-                          className="popover-pop flex w-72 flex-col items-center gap-3 border-brand-200 text-center shadow-(--card-shadow-hover)"
+-                        >
+-                          <p className="text-lg font-black text-text">{lesson.title}</p>
+-                          {status === 'locked' ? (
+-                            <p className="text-sm text-text-muted">{t.lockedHint}</p>
+-                          ) : (
+-                            <>
+-                              <p className="rounded-full bg-brand-50 px-3.5 py-1 text-xs font-extrabold text-brand-fg">
+-                                {t.items(lesson.items.length)} · {t.xp(lesson.xp_reward)}
+-                              </p>
+-                              <Button asChild className="w-full">
+-                                <Link to={`/lesson/${lesson.code}`}>
+-                                  <PlayIcon className="size-4" />
+-                                  {status === 'completed' ? t.again : t.start}
+-                                </Link>
+-                              </Button>
+-                            </>
+-                          )}
+-                        </Card>
+-                      )}
+-                    </li>
+-                  );
+-                })}
+-              </ol>
+-            </section>
+-          );
+-        })}
++    <section className="candy-sky relative -m-4 min-h-full overflow-hidden pb-10 md:-m-8">
++      <h1 className="sr-only">{t.title}</h1>
++
++      {/* sky */}
++      <div aria-hidden="true" className="pointer-events-none absolute right-[6%] top-6 size-36">
++        <div className="candy-rays candy-rays-spin absolute -inset-14 rounded-full" />
++        <div className="candy-sun absolute inset-5 rounded-full" />
+       </div>
++      <div aria-hidden="true" className="candy-drift pointer-events-none absolute left-[4%] top-10"><Cloud width={170} /></div>
++      <div aria-hidden="true" className="candy-drift pointer-events-none absolute left-[42%] top-24 opacity-90 [animation-delay:-3s]"><Cloud width={120} /></div>
+ 
+-      <aside className="flex flex-col gap-4 lg:sticky lg:top-20 lg:self-start">
+-        <Card className="flex flex-col gap-3">
++      {/* HUD: goal, sync, legend */}
++      <div className="relative z-10 flex max-w-5xl flex-wrap gap-4 px-6 pt-6">
++        <div className="candy-goal-card flex flex-[1_1_16rem] flex-col gap-2.5 rounded-[1.75rem] border-4 border-surface px-5 py-4">
+           <div className="flex items-center justify-between">
+-            <h2 className="text-base font-black text-text">{t.goal}</h2>
+-            <span className="inline-flex size-8 items-center justify-center rounded-full bg-warning-bg/70 text-xp">
+-              <BoltIcon className="size-4" />
+-            </span>
++            <h2 className="text-xl font-black">{t.goal}</h2>
++            <span className="inline-flex size-10 items-center justify-center rounded-full bg-surface text-xp"><BoltIcon className="size-5" /></span>
+           </div>
+-          <ProgressBar value={today} max={goal} label={t.goal} />
+-          <p className="text-sm font-extrabold text-text-muted">{t.goalValue(today, goal)}</p>
+-        </Card>
+-
+-        <Card className="flex flex-col gap-2.5">
+-          <div className="flex items-center gap-2">
+-            <span className="inline-flex size-8 items-center justify-center rounded-xl bg-brand-100 text-brand-fg">
+-              <ShieldLockIcon className="size-4" />
+-            </span>
+-            <h2 className="text-sm font-black text-text">Đồng bộ tiến độ</h2>
++          <ProgressBar value={today} max={goal} label={t.goal} className="border-surface" />
++          <p className="text-base font-black">{t.goalValue(today, goal)}</p>
++        </div>
++        <div className="candy-sync-card flex flex-[1_1_16rem] flex-col gap-2 rounded-[1.75rem] border-4 border-surface px-5 py-4">
++          <div className="flex items-center gap-2.5">
++            <span className="candy-sync-badge inline-flex size-10 items-center justify-center rounded-2xl text-text-on-brand"><ShieldLockIcon className="size-5" /></span>
++            <h2 className="text-lg font-black">{t.sync}</h2>
++          </div>
++          <p className="text-[13px] leading-relaxed">{t.syncText}</p>
++          <Link to="/profile" className="candy-sync-link text-sm font-black underline underline-offset-4">{t.syncLink}</Link>
++        </div>
++        <div className="candy-legend-card flex flex-[1_1_12rem] flex-col gap-2 rounded-[1.75rem] border-4 border-surface px-5 py-4 text-[13px]">
++          <h2 className="text-lg font-black">{t.legend}</h2>
++          <p className="flex items-center gap-2.5"><span aria-hidden="true" className="candy-node candy-node-available size-6 rounded-full border-2" />{t.legendItems.available}</p>
++          <p className="flex items-center gap-2.5"><span aria-hidden="true" className="candy-node candy-node-completed size-6 rounded-full border-2" />{t.legendItems.completed}</p>
++          <p className="flex items-center gap-2.5"><span aria-hidden="true" className="candy-node candy-node-locked size-6 rounded-full border-2" />{t.legendItems.locked}</p>
++        </div>
++      </div>
++
++      {failed && <p role="alert" className="relative z-10 mx-6 mt-6 rounded-2xl bg-danger-bg p-4 font-bold text-danger-on-bg">{t.loadError}</p>}
++      {!data && !failed && <p className="relative z-10 mx-6 mt-6 font-bold text-text">{t.loading}</p>}
++
++      {data && (
++        <div className="relative mt-6" style={{ height: map.height }}>
++          {/* unit worlds, full width */}
++          {units.map((unit, ui) => {
++            const box = map.units[ui];
++            return (
++              <div key={unit.code} aria-hidden="true" className={`candy-world-${(ui % 3) + 1} candy-zone absolute inset-x-0 overflow-hidden`} style={{ top: box.zoneTop, height: box.zoneHeight }}>
++                <div className="absolute -inset-x-[20%] -top-16 h-36 rounded-[50%] bg-[var(--w-back)] opacity-50" />
++                <div className="absolute -bottom-20 -left-[12%] h-52 w-[72%] rounded-[50%] bg-[var(--w-h1)] opacity-60" />
++                <div className="absolute -bottom-24 -right-[14%] h-56 w-[78%] rounded-[50%] bg-[var(--w-h2)] opacity-65" />
++                <div className="candy-zone-dots absolute inset-0 opacity-60" />
++                <span className="candy-flag absolute left-5 top-14 rounded-2xl border-[3px] border-surface bg-surface/90 px-3.5 py-1.5 text-base font-black">{t.worlds[ui % 3]}</span>
++                {box.decor.map((d, i) => (
++                  <div key={i} className={`absolute z-[1] ${d.float ? 'float-slow' : ''}`} style={{ left: `${d.left}%`, top: d.top, animationDelay: `-${d.delay.toFixed(1)}s` }}>
++                    <CandyDecor kind={d.kind} c1={d.c1} c2={d.c2} width={DECOR_SIZE[d.kind][0]} height={DECOR_SIZE[d.kind][1]} />
++                  </div>
++                ))}
++                {box.sparks.map((s, i) => (
++                  <div key={`s${i}`} className="candy-twinkle absolute" style={{ left: `${s.left}%`, top: s.top, animationDelay: `-${s.delay.toFixed(1)}s` }}><Sparkle size={s.size} /></div>
++                ))}
++              </div>
++            );
++          })}
++
++          {/* the lane: road, banners, gates, lessons */}
++          <div className="absolute left-1/2 top-0 w-[min(41rem,100%)] -translate-x-1/2" style={{ height: map.height }}>
++            <svg aria-hidden="true" focusable="false" viewBox={`0 0 100 ${map.height}`} preserveAspectRatio="none" className="absolute inset-0 size-full overflow-visible">
++              <path d={road} fill="none" stroke="var(--candy-path-shadow)" strokeWidth="54" strokeLinecap="round" vectorEffect="non-scaling-stroke" transform="translate(0 8)" />
++              <path d={road} fill="none" stroke="var(--candy-white)" strokeWidth="50" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
++              <path d={road} fill="none" stroke="var(--candy-path-bed)" strokeWidth="38" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
++              <path d={road} fill="none" stroke="var(--candy-white)" strokeWidth="10" strokeLinecap="round" strokeDasharray="1 26" vectorEffect="non-scaling-stroke" />
++              {roadDone && <path d={roadDone} fill="none" stroke="var(--candy-path-done)" strokeWidth="38" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
++              {roadDone && <path d={roadDone} fill="none" stroke="var(--candy-white)" strokeWidth="38" strokeDasharray="14 18" vectorEffect="non-scaling-stroke" />}
++            </svg>
++
++            {units.map((unit, ui) => {
++              const box = map.units[ui];
++              const done = unit.lessons.filter((l) => lessonStatus(l, progress) === 'completed').length;
++              const all = done === unit.lessons.length;
++              return (
++                <div key={unit.code} className={`candy-world-${(ui % 3) + 1}`}>
++                  <section aria-labelledby={`unit-${unit.code}`} className="absolute left-1/2 z-[9] flex w-[min(94%,32.5rem)] -translate-x-1/2 flex-col items-center" style={{ top: box.bannerY }}>
++                    <div className="candy-ribbon flex w-full flex-col items-center gap-0.5 rounded-lg px-14 pb-5 pt-4">
++                      <p className="text-[13px] font-black uppercase tracking-[0.18em]">{t.level(unit.level)}</p>
++                      <h2 id={`unit-${unit.code}`} className="text-center text-[1.75rem] font-black leading-tight">{unit.title}</h2>
++                    </div>
++                    <div className="candy-counter relative -mt-2.5 flex h-8 w-40 items-center justify-center overflow-hidden rounded-full border-4 bg-surface">
++                      <div aria-hidden="true" className="candy-counter-fill absolute inset-y-0 left-0" style={{ width: `${Math.round((done / unit.lessons.length) * 100)}%` }} />
++                      <span className="relative text-[15px] font-black">{t.unitCount(done, unit.lessons.length)}</span>
++                    </div>
++                  </section>
++                  <div className="absolute left-1/2 z-[5] flex -translate-x-1/2 flex-col items-center gap-1.5" style={{ top: box.gateY }}>
++                    <span aria-hidden="true" className={`inline-flex size-[4.6rem] items-center justify-center rounded-[1.4rem] border-[5px] border-surface text-text-on-brand ${all ? 'candy-gate-done' : 'candy-gate'}`}>
++                      <TrophyIcon className="size-9" />
++                    </span>
++                    <span className="candy-flag rounded-full bg-surface px-3.5 py-1 text-sm font-black">{all ? t.gateDone(t.level(unit.level)) : t.gateTodo(t.level(unit.level))}</span>
++                  </div>
++                </div>
++              );
++            })}
++
++            <ol className="contents">
++              {units.map((unit, ui) => unit.lessons.map((lesson, li) => {
++                const idx = g++;
++                const status = statuses[idx];
++                const { x, y } = map.units[ui].nodes[li];
++                const locked = status === 'locked';
++                const big = idx === firstOpen;
++                const size = big ? 104 : 90;
++                const expanded = open === lesson.code;
++                const glosses = lessonGlosses(lesson, glossOf);
++                const chips = glosses.length > MAX_CHIPS ? [...glosses.slice(0, MAX_CHIPS - 1), '…'] : glosses;
++                const shift = (Math.min(72, Math.max(28, x)) - x) * LANE_PX_PER_PCT;
++                return (
++                  <li
++                    key={lesson.code}
++                    className={`candy-world-${(ui % 3) + 1} absolute flex flex-col items-center gap-1.5`}
++                    style={{ left: `${x}%`, top: y - size / 2, width: size, marginLeft: -size / 2, zIndex: expanded ? 25 : 6 }}
++                  >
++                    {big && (
++                      <>
++                        <span aria-hidden="true" className="candy-ring absolute left-0 top-0 size-[6.5rem] rounded-full border-[6px] border-surface" />
++                        {!expanded && (
++                          <span aria-hidden="true" className="candy-bubble absolute -top-14 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border-4 border-brand-500 bg-surface px-4 py-1.5 text-base font-black text-brand-fg shadow-[0_4px_0_var(--btn-pink-lip)]">
++                            {t.next}
++                          </span>
++                        )}
++                      </>
++                    )}
++                    <SkillNode title={lesson.title} status={status} expanded={expanded} number={idx + 1} big={big} onSelect={() => setOpen(expanded ? null : lesson.code)} />
++                    {status === 'completed' && (
++                      <span aria-hidden="true" className="absolute -top-4 left-1/2 inline-flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-surface text-[var(--candy-gold)] shadow-[0_3px_0_var(--candy-gold-lip)]">
++                        <StarIcon className="size-6 fill-current" />
++                      </span>
++                    )}
++                    <span className={`whitespace-nowrap rounded-full border-[3px] border-surface px-3.5 py-0.5 text-[15px] font-black ${locked ? 'candy-tag-locked' : 'candy-tag'}`}>
++                      {lesson.title.split(':')[0]}
++                    </span>
++                    {chips.length > 0 && (
++                      <span aria-hidden="true" className="flex max-w-52 flex-wrap justify-center gap-1">
++                        {chips.map((c) => (
++                          <span key={c} className={`inline-flex h-[26px] min-w-[26px] items-center justify-center rounded-[9px] border-2 border-surface px-1.5 text-[15px] font-black ${locked ? 'candy-chip-locked' : 'candy-chip'}`}>{c}</span>
++                        ))}
++                      </span>
++                    )}
++
++                    {expanded && (
++                      <div
++                        role="group"
++                        aria-label={t.popover(lesson.title)}
++                        onKeyDown={(e) => e.key === 'Escape' && setOpen(null)}
++                        className={`popover-pop absolute left-1/2 flex w-72 flex-col items-center gap-2.5 rounded-[1.75rem] border-[5px] bg-surface p-[18px] text-center ${locked ? 'candy-popover-locked border-[var(--candy-locked-chip)]' : 'candy-popover border-brand-200'}`}
++                        style={{ top: size + 70, transform: `translateX(calc(-50% + ${shift}px))` }}
++                      >
++                        <p className="text-xs font-black uppercase tracking-[0.12em] text-brand-fg">{t.level(unit.level)} · {unit.title}</p>
++                        <p className="text-[1.4rem] font-black text-text">{lesson.title}</p>
++                        {locked ? (
++                          <p className="flex items-center gap-2 rounded-2xl bg-[var(--candy-locked-chip)] px-3 py-2.5 text-sm text-[var(--candy-locked-ink)]">
++                            <LockIcon className="size-[18px] shrink-0" />{t.lockedHint}
++                          </p>
++                        ) : (
++                          <>
++                            <p className="rounded-full bg-brand-50 px-3.5 py-1 text-[13px] font-extrabold text-brand-fg">
++                              {t.items(lesson.items.length)} · {t.xp(lesson.xp_reward)}
++                            </p>
++                            <Link
++                              to={`/lesson/${lesson.code}`}
++                              className="btn-pink inline-flex min-h-[3.4rem] w-full items-center justify-center gap-2 rounded-full text-lg font-black text-ink-on-pink"
++                            >
++                              <PlayIcon className="size-[18px]" />
++                              {status === 'completed' ? t.again : t.start}
++                            </Link>
++                          </>
++                        )}
++                        <button type="button" onClick={() => setOpen(null)} className="min-h-11 cursor-pointer px-3 text-sm font-extrabold text-brand-fg">{t.close}</button>
++                      </div>
++                    )}
++                  </li>
++                );
++              }))}
++            </ol>
+           </div>
+-          <p className="text-xs leading-relaxed text-text-muted">
+-            Đăng nhập tài khoản để lưu XP, chuỗi ngày và trạng thái bài học lên cơ sở dữ liệu xuyên suốt các thiết bị.
+-          </p>
+-          <Link to="/profile" className="text-xs font-extrabold text-brand-fg underline underline-offset-4 hover:text-brand-700">
+-            Mở Hồ sơ &amp; Tài khoản →
+-          </Link>
+-        </Card>
+-      </aside>
++        </div>
++      )}
+     </section>
+   );
+ }
+diff --git a/frontend/src/features/skill-tree/candyLayout.test.ts b/frontend/src/features/skill-tree/candyLayout.test.ts
+new file mode 100644
+index 0000000..6353c1a
+--- /dev/null
++++ b/frontend/src/features/skill-tree/candyLayout.test.ts
+@@ -0,0 +1,53 @@
++import { describe, expect, it } from 'vitest';
++import { BANNER_SPACE, GATE_SPACE, MAP_TOP, NODE_STEP, layoutMap, nodeX, roadPath, seeded } from './candyLayout';
++
++describe('candyLayout', () => {
++  it('places one node per lesson, top to bottom, inside its unit world', () => {
++    const map = layoutMap([7, 1, 2]);
++    expect(map.points).toHaveLength(10);
++    expect(map.units.map((u) => u.nodes.length)).toEqual([7, 1, 2]);
++    for (let i = 1; i < map.points.length; i++) expect(map.points[i].y).toBeGreaterThan(map.points[i - 1].y);
++    for (const u of map.units) {
++      for (const n of u.nodes) {
++        expect(n.y).toBeGreaterThan(u.zoneTop);
++        expect(n.y).toBeLessThan(u.zoneTop + u.zoneHeight);
++        expect(n.x).toBeGreaterThanOrEqual(50 - 27);
++        expect(n.x).toBeLessThanOrEqual(50 + 27);
++      }
++    }
++  });
++
++  it('stacks unit worlds without gaps and sizes the map to fit them', () => {
++    const map = layoutMap([2, 3]);
++    expect(map.units[0].zoneTop).toBe(0);
++    expect(map.units[1].zoneTop).toBe(map.units[0].zoneTop + map.units[0].zoneHeight);
++    expect(map.units[0].nodes[0].y).toBe(MAP_TOP + BANNER_SPACE);
++    expect(map.units[0].zoneHeight).toBe(MAP_TOP + BANNER_SPACE + 2 * NODE_STEP + GATE_SPACE);
++    const last = map.units[1];
++    expect(map.height).toBeGreaterThanOrEqual(last.zoneTop + last.zoneHeight);
++  });
++
++  it('keeps decorations to the sides and is the same on every call', () => {
++    const a = layoutMap([7, 1, 2]);
++    const b = layoutMap([7, 1, 2]);
++    expect(a).toEqual(b);
++    for (const u of a.units) {
++      expect(u.decor.length).toBeGreaterThan(0);
++      for (const d of u.decor) {
++        expect(d.left < 20 || d.left > 78).toBe(true);
++        expect(d.c1).not.toBe(d.c2);
++      }
++    }
++    expect(seeded(3)).toBeGreaterThanOrEqual(0);
++    expect(seeded(3)).toBeLessThan(1);
++  });
++
++  it('draws the road through every point', () => {
++    expect(roadPath([])).toBe('');
++    expect(roadPath([{ x: 50, y: 10 }])).toBe('M50 10');
++    const d = roadPath([{ x: nodeX(0), y: 10 }, { x: nodeX(1), y: 200 }, { x: nodeX(2), y: 400 }]);
++    expect(d.startsWith('M')).toBe(true);
++    expect(d.match(/C/g)).toHaveLength(2);
++    expect(d.endsWith(' 400')).toBe(true);
++  });
++});
+diff --git a/frontend/src/features/skill-tree/candyLayout.ts b/frontend/src/features/skill-tree/candyLayout.ts
+new file mode 100644
+index 0000000..e5ace1b
+--- /dev/null
++++ b/frontend/src/features/skill-tree/candyLayout.ts
+@@ -0,0 +1,98 @@
++/**
++ * Pure layout for the candy-map learning path: where each unit world, banner, lesson node and finish
++ * gate sits, the winding road through the nodes, and the decorations at the sides. No React, no randomness
++ * at render time: decorations come from a fixed seed so the map looks the same on every visit.
++ */
++
++export const MAP_TOP = 40;
++export const BANNER_SPACE = 210;
++export const NODE_STEP = 175;
++export const GATE_SPACE = 110;
++/** Horizontal swing of the road, in % of the lane width around the centre (50 %). */
++export const SWING = 27;
++
++export type DecorKind = 'lolly' | 'tree' | 'cupcake' | 'cane' | 'donut' | 'icecream' | 'house' | 'gum';
++export const DECOR_KINDS: readonly DecorKind[] = ['lolly', 'tree', 'cupcake', 'cane', 'donut', 'icecream', 'house', 'gum'];
++export const DECOR_SIZE: Record<DecorKind, [number, number]> = {
++  lolly: [52, 104], tree: [78, 108], cupcake: [58, 68], cane: [34, 86], donut: [58, 58], icecream: [44, 80], house: [92, 92], gum: [46, 38],
++};
++
++export type Decor = { kind: DecorKind; left: number; top: number; c1: number; c2: number; float: boolean; delay: number };
++export type Spark = { left: number; top: number; size: number; delay: number };
++export type NodePos = { x: number; y: number };
++export type UnitLayout = {
++  zoneTop: number; zoneHeight: number; bannerY: number; gateY: number;
++  nodes: NodePos[]; decor: Decor[]; sparks: Spark[];
++};
++export type MapLayout = { height: number; units: UnitLayout[]; points: NodePos[] };
++
++/** Deterministic value in [0, 1) for decoration seed n (seed 42 as everywhere in the project). */
++export function seeded(n: number): number {
++  const v = Math.sin((n + 42) * 12.9898) * 43758.5453;
++  return v - Math.floor(v);
++}
++
++/** x position (% of the lane) of the g-th lesson along the whole path. */
++export function nodeX(g: number): number {
++  return 50 + SWING * Math.sin(g * 1.05 + 0.25);
++}
++
++export function layoutMap(lessonCounts: readonly number[]): MapLayout {
++  const units: UnitLayout[] = [];
++  const points: NodePos[] = [];
++  let y = 0;
++  let g = 0;
++  let seed = 1;
++  const next = () => seeded(seed++);
++
++  for (const count of lessonCounts) {
++    const zoneTop = y;
++    y += MAP_TOP;
++    const bannerY = y;
++    y += BANNER_SPACE;
++    const nodes: NodePos[] = [];
++    for (let i = 0; i < count; i++) {
++      const p = { x: nodeX(g), y };
++      nodes.push(p);
++      points.push(p);
++      y += NODE_STEP;
++      g++;
++    }
++    const gateY = y - 40;
++    y += GATE_SPACE;
++    const zoneHeight = y - zoneTop;
++
++    const decor: Decor[] = [];
++    const sparks: Spark[] = [];
++    const rows = Math.max(1, Math.floor((zoneHeight - 140) / 120));
++    for (let r = 0; r < rows; r++) {
++      for (const side of [0, 1]) {
++        const kind = DECOR_KINDS[Math.floor(next() * DECOR_KINDS.length)];
++        const left = side === 0 ? 1 + next() * 17 : 80 + next() * 15;
++        const top = 130 + r * 120 + next() * 40;
++        const c1 = Math.floor(next() * 5) + 1;
++        let c2 = Math.floor(next() * 5) + 1;
++        if (c2 === c1) c2 = (c1 % 5) + 1;
++        decor.push({ kind, left, top, c1, c2, float: next() > 0.6, delay: next() * 4 });
++      }
++      sparks.push({ left: 20 + next() * 60, top: 150 + r * 120 + next() * 60, size: 18 + Math.round(next() * 12), delay: next() * 2.6 });
++    }
++    units.push({ zoneTop, zoneHeight, bannerY, gateY, nodes, decor, sparks });
++  }
++  return { height: y, units, points };
++}
++
++/** Smooth road through the points (Catmull-Rom as cubic Béziers), in a viewBox of 0..100 × px. */
++export function roadPath(points: readonly NodePos[]): string {
++  if (points.length === 0) return '';
++  const f = (n: number) => Number(n.toFixed(2));
++  let d = `M${f(points[0].x)} ${points[0].y}`;
++  for (let i = 0; i < points.length - 1; i++) {
++    const p0 = points[Math.max(0, i - 1)];
++    const p1 = points[i];
++    const p2 = points[i + 1];
++    const p3 = points[Math.min(points.length - 1, i + 2)];
++    d += ` C${f(p1.x + (p2.x - p0.x) / 6)} ${f(p1.y + (p2.y - p0.y) / 6)} ${f(p2.x - (p3.x - p1.x) / 6)} ${f(p2.y - (p3.y - p1.y) / 6)} ${f(p2.x)} ${p2.y}`;
++  }
++  return d;
++}
+diff --git a/frontend/src/i18n/vi.ts b/frontend/src/i18n/vi.ts
+index f785738..5efa03e 100644
+--- a/frontend/src/i18n/vi.ts
++++ b/frontend/src/i18n/vi.ts
+@@ -147,6 +147,17 @@ export const vi = {
+     aiUsing: 'AI đang dùng',
+     seeLab: 'Xem trong AI Lab',
+     lessonSoon: 'Màn học bài đang được xây dựng.',
++    next: 'Học tiếp!',
++    unitCount: (done: number, total: number) => `${done} / ${total} bài`,
++    worlds: ['Thung lũng Kẹo Dâu', 'Rừng Bạc Hà', 'Lâu đài Kẹo Nho'],
++    gateDone: (level: string) => `Hoàn thành ${level}!`,
++    gateTodo: (level: string) => `Đích ${level}`,
++    close: 'Đóng',
++    sync: 'Đồng bộ tiến độ',
++    syncText: 'Đăng nhập tài khoản để lưu XP, chuỗi ngày và trạng thái bài học lên cơ sở dữ liệu xuyên suốt các thiết bị.',
++    syncLink: 'Mở Hồ sơ & Tài khoản →',
++    legend: 'Chú thích',
++    legendItems: { available: 'Sẵn sàng học', completed: 'Đã hoàn thành', locked: 'Chưa mở' },
+   },
+   landing: {
+     tagline: 'Học bảng chữ cái ngôn ngữ ký hiệu ASL ngay trước webcam của bạn.',
+diff --git a/frontend/src/index.css b/frontend/src/index.css
+index 4314275..9d4c914 100644
+--- a/frontend/src/index.css
++++ b/frontend/src/index.css
+@@ -235,3 +235,56 @@
+   .marquee-group:hover .marquee-track { animation-play-state: paused; }
+   .scan-beam { animation: scan-sweep 3.2s ease-in-out infinite; }
+ }
++
++/* ===== Candy map (learning path) ===== */
++.candy-sky { background-image: var(--candy-sky); }
++.candy-sun { background-image: var(--candy-sun); box-shadow: var(--candy-sun-glow); }
++.candy-rays { background-image: var(--candy-rays); }
++.candy-world-1 { --w-bg: var(--candy-w1-bg); --w-back: var(--candy-w1-back); --w-h1: var(--candy-w1-h1); --w-h2: var(--candy-w1-h2); --w-ribbon: var(--candy-w1-ribbon); --w-lip: var(--candy-w1-lip); --c1: var(--candy-w1-c1); --c2: var(--candy-w1-c2); --c3: var(--candy-w1-c3); --c4: var(--candy-w1-c4); --c5: var(--candy-w1-c5); }
++.candy-world-2 { --w-bg: var(--candy-w2-bg); --w-back: var(--candy-w2-back); --w-h1: var(--candy-w2-h1); --w-h2: var(--candy-w2-h2); --w-ribbon: var(--candy-w2-ribbon); --w-lip: var(--candy-w2-lip); --c1: var(--candy-w2-c1); --c2: var(--candy-w2-c2); --c3: var(--candy-w2-c3); --c4: var(--candy-w2-c4); --c5: var(--candy-w2-c5); }
++.candy-world-3 { --w-bg: var(--candy-w3-bg); --w-back: var(--candy-w3-back); --w-h1: var(--candy-w3-h1); --w-h2: var(--candy-w3-h2); --w-ribbon: var(--candy-w3-ribbon); --w-lip: var(--candy-w3-lip); --c1: var(--candy-w3-c1); --c2: var(--candy-w3-c2); --c3: var(--candy-w3-c3); --c4: var(--candy-w3-c4); --c5: var(--candy-w3-c5); }
++.candy-zone { background-image: var(--w-bg); }
++.candy-zone-dots { background-image: radial-gradient(rgba(255, 255, 255, 0.6) 3px, transparent 3px); background-size: 34px 34px; }
++.candy-ribbon {
++  background-image: var(--w-ribbon);
++  color: var(--candy-white);
++  text-shadow: 0 2px 0 var(--w-lip);
++  box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.35), inset 0 -6px 0 rgba(0, 0, 0, 0.12);
++  clip-path: polygon(0 0, 100% 0, 93% 50%, 100% 100%, 0 100%, 7% 50%);
++}
++.candy-counter { border-color: var(--w-lip); color: var(--w-lip); }
++.candy-counter-fill, .candy-goal-fill { background-image: var(--candy-stripe-gold); }
++.candy-chip { background: var(--w-lip); color: var(--candy-white); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18); }
++.candy-chip-locked { background: var(--candy-locked-chip); color: var(--candy-locked-ink); }
++.candy-tag { background: var(--w-lip); color: var(--candy-white); }
++.candy-tag-locked { background: var(--candy-locked-chip); color: var(--candy-locked-ink); }
++.candy-flag { color: var(--w-lip); box-shadow: 0 3px 0 var(--w-lip); }
++.candy-gate { background-image: var(--w-ribbon); box-shadow: 0 6px 0 var(--w-lip); }
++.candy-gate-done { background-image: var(--candy-node-completed); box-shadow: 0 6px 0 var(--candy-node-completed-lip); }
++.candy-node { border: 6px solid var(--candy-white); }
++.candy-node-available { background-image: var(--candy-node-available); box-shadow: var(--candy-node-available-shadow); }
++.candy-node-completed { background-image: var(--candy-node-completed); box-shadow: var(--candy-node-completed-shadow); }
++.candy-node-locked { background-image: var(--candy-node-locked); box-shadow: var(--candy-node-locked-shadow); color: var(--candy-locked-ink); }
++.candy-num-available { color: var(--candy-white); text-shadow: 0 3px 0 var(--candy-node-available-lip); }
++.candy-num-completed { color: var(--candy-white); text-shadow: 0 3px 0 var(--candy-node-completed-lip); }
++.candy-goal-card { background-image: var(--candy-goal-card); box-shadow: var(--candy-goal-shadow); color: var(--candy-goal-ink); }
++.candy-sync-card { background-image: var(--candy-sync-card); box-shadow: var(--candy-sync-shadow); color: var(--candy-sync-ink); }
++.candy-sync-badge { background-image: var(--candy-sync-badge); }
++.candy-sync-link { color: var(--candy-sync-link); }
++.candy-legend-card { background-image: var(--candy-legend-card); box-shadow: var(--candy-legend-shadow); color: var(--candy-legend-ink); }
++.candy-popover { box-shadow: var(--candy-popover-shadow); }
++.candy-popover-locked { box-shadow: var(--candy-popover-locked-shadow); }
++
++@keyframes candy-ring { 0% { transform: scale(0.9); opacity: 0.8; } 100% { transform: scale(1.55); opacity: 0; } }
++@keyframes candy-twinkle { 0%, 100% { opacity: 0.3; transform: scale(0.7) rotate(0deg); } 50% { opacity: 1; transform: scale(1.15) rotate(20deg); } }
++@keyframes candy-drift { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(18px); } }
++@keyframes candy-spin { to { transform: rotate(360deg); } }
++@keyframes candy-bubble { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -8px); } }
++
++@media (prefers-reduced-motion: no-preference) {
++  .candy-ring { animation: candy-ring 1.6s ease-out infinite; }
++  .candy-twinkle { animation: candy-twinkle 2.6s ease-in-out infinite; }
++  .candy-drift { animation: candy-drift 9s ease-in-out infinite; }
++  .candy-rays-spin { animation: candy-spin 60s linear infinite; }
++  .candy-bubble { animation: candy-bubble 1.8s ease-in-out infinite; }
++}
+diff --git a/frontend/src/styles/tokens.css b/frontend/src/styles/tokens.css
+index 07f91d2..3c9a58b 100644
+--- a/frontend/src/styles/tokens.css
++++ b/frontend/src/styles/tokens.css
+@@ -83,6 +83,63 @@
+   --motion-base: 220ms;
+   --motion-bounce: 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+ 
++  /* Candy map (learning path): sky, three unit worlds, candy lesson nodes */
++  --candy-sky: linear-gradient(180deg, #8fdcff 0%, #c9efff 260px, #ffe3ee 520px);
++  --candy-sun: radial-gradient(circle at 38% 35%, #fffbe0 0 18%, #ffe066 40%, #ffbf00 100%);
++  --candy-sun-glow: 0 0 0 10px rgba(255, 236, 150, 0.5), 0 0 60px 20px rgba(255, 214, 80, 0.55);
++  --candy-rays: repeating-conic-gradient(rgba(255, 255, 255, 0.55) 0 10deg, rgba(255, 255, 255, 0) 10deg 22deg);
++  --candy-white: #ffffff;
++  --candy-path-shadow: rgba(156, 90, 120, 0.25);
++  --candy-path-bed: #e7dcf5;
++  --candy-path-done: #ff7aa8;
++  --candy-cookie: #f6c58f;
++  --candy-cone: #f2b46a;
++  --candy-cone-line: #c9803a;
++  --candy-dough: #d98e4a;
++  --candy-cherry: #e8173f;
++  --candy-sprinkle-1: #ffe066;
++  --candy-sprinkle-2: #7dd3fc;
++  --candy-node-available: radial-gradient(circle at 34% 28%, #ffe1eb 0 10%, #ff9fbe 26%, #f5508a 60%, #c41f5e 100%);
++  --candy-node-available-shadow: 0 8px 0 #85103d, 0 18px 28px -8px rgba(196, 31, 94, 0.65), inset 0 -8px 0 rgba(0, 0, 0, 0.12);
++  --candy-node-available-lip: #85103d;
++  --candy-node-completed: radial-gradient(circle at 34% 28%, #fff8cc 0 10%, #ffd84d 24%, #f5b301 58%, #cf7f00 100%);
++  --candy-node-completed-shadow: 0 8px 0 #9a5a00, 0 16px 24px -8px rgba(154, 90, 0, 0.6), inset 0 -8px 0 rgba(0, 0, 0, 0.1);
++  --candy-node-completed-lip: #9a5a00;
++  --candy-node-locked: radial-gradient(circle at 34% 28%, #ffffff 0 10%, #f1ebfb 26%, #d9cff0 62%, #bcaee0 100%);
++  --candy-node-locked-shadow: 0 7px 0 #9a88c4, inset 0 -6px 0 rgba(0, 0, 0, 0.06);
++  --candy-locked-ink: #4a3a6b;
++  --candy-locked-chip: #ece5f8;
++  --candy-gold: #f5b301;
++  --candy-gold-lip: #c27c00;
++  --candy-goal-card: linear-gradient(180deg, #fffdf2 0%, #ffe9a3 100%);
++  --candy-goal-shadow: 0 6px 0 #e9b52f, 0 18px 30px -16px rgba(168, 98, 0, 0.6);
++  --candy-goal-ink: #5c2e00;
++  --candy-sync-card: linear-gradient(180deg, #ffffff 0%, #e6dcff 100%);
++  --candy-sync-shadow: 0 6px 0 #b7a2ea, 0 18px 30px -16px rgba(91, 63, 176, 0.55);
++  --candy-sync-ink: #2e1a5e;
++  --candy-sync-link: #4a2aa8;
++  --candy-sync-badge: radial-gradient(circle at 35% 30%, #ffffff 0 10%, #c4b0ff 11%, #8b6be0 75%);
++  --candy-legend-card: linear-gradient(180deg, #ffffff 0%, #d4f7e8 100%);
++  --candy-legend-shadow: 0 6px 0 #7fd6b2, 0 18px 30px -16px rgba(11, 107, 74, 0.45);
++  --candy-legend-ink: #064e36;
++  --candy-stripe-gold: repeating-linear-gradient(135deg, #ffd23f 0 10px, #ffb800 10px 20px);
++  --candy-popover-shadow: 0 8px 0 #f08fb2, 0 24px 44px -14px rgba(43, 10, 24, 0.4);
++  --candy-popover-locked-shadow: 0 8px 0 #bcaee0, 0 24px 44px -14px rgba(43, 10, 24, 0.4);
++
++  /* Unit worlds: strawberry (1), mint (2), grape (3) */
++  --candy-w1-bg: linear-gradient(180deg, #ffd0e2 0%, #ffe4ee 40%, #ffc0d6 100%);
++  --candy-w1-back: #ffb3cb; --candy-w1-h1: #ff8fb3; --candy-w1-h2: #ffa8c5;
++  --candy-w1-ribbon: linear-gradient(180deg, #d63672 0%, #a3154a 100%); --candy-w1-lip: #8a1040;
++  --candy-w1-c1: #ff6f9f; --candy-w1-c2: #ffd23f; --candy-w1-c3: #7dd3fc; --candy-w1-c4: #ff9f43; --candy-w1-c5: #b18cff;
++  --candy-w2-bg: linear-gradient(180deg, #bff3df 0%, #e4fff3 45%, #9de9cb 100%);
++  --candy-w2-back: #8ee3c3; --candy-w2-h1: #4fd1a5; --candy-w2-h2: #7fdcb9;
++  --candy-w2-ribbon: linear-gradient(180deg, #0e8a5f 0%, #06573b 100%); --candy-w2-lip: #05482f;
++  --candy-w2-c1: #34c38f; --candy-w2-c2: #ff8fb3; --candy-w2-c3: #ffd23f; --candy-w2-c4: #7dd3fc; --candy-w2-c5: #ff9f43;
++  --candy-w3-bg: linear-gradient(180deg, #dccfff 0%, #f1ebff 45%, #ffd0b5 100%);
++  --candy-w3-back: #c9b6ff; --candy-w3-h1: #a98bf5; --candy-w3-h2: #ffb38a;
++  --candy-w3-ribbon: linear-gradient(180deg, #7a55e0 0%, #4a2aa8 100%); --candy-w3-lip: #3b1f94;
++  --candy-w3-c1: #9b7bf0; --candy-w3-c2: #ff9f43; --candy-w3-c3: #ff6f9f; --candy-w3-c4: #ffd23f; --candy-w3-c5: #5fd3a8;
++
+   accent-color: var(--brand-600);
+   scrollbar-color: var(--brand-600) var(--surface-2);
+ }
+-- 
+2.43.0
+
