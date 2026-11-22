@@ -111,7 +111,7 @@ describe('Practice (Free Practice)', () => {
     await waitFor(() => expect(f.engine.start).toHaveBeenCalled());
     for (const t of [0, 1000]) { now = t; await f.emit(prediction('H')); }
     fireEvent.click(screen.getByRole('button', { name: 'Dấu cách' }));
-    expect(document.querySelector('[aria-live="polite"].text-3xl')?.textContent).toBe('H ');
+    expect(document.querySelector('[aria-live="polite"].text-2xl')?.textContent).toBe('H ');
     fireEvent.click(screen.getByRole('button', { name: 'Xóa chữ cuối' }));
     fireEvent.click(screen.getByRole('button', { name: 'Xóa chữ cuối' }));
     expect(screen.getByText('Chưa có chữ nào')).toBeInTheDocument();
