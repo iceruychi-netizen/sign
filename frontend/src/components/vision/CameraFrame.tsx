@@ -44,7 +44,7 @@ export function CameraFrame({
       role="region"
       aria-label={vi.camera.label}
       data-state={state}
-      className={`relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-2xl)] border-4 bg-surface-2 shadow-(--card-shadow) ${BORDER[state]}`}
+      className={`relative mx-auto aspect-[4/3] max-h-[calc(100dvh-19rem)] w-full max-w-[calc((100dvh-19rem)*4/3)] overflow-hidden rounded-[var(--radius-2xl)] border-4 bg-surface-2 shadow-(--card-shadow) ${BORDER[state]}`}
     >
       {showVideo && (
         <>

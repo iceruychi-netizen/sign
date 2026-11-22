@@ -70,48 +70,50 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
 
   let g = 0;
   return (
-    <section className="candy-sky relative -m-4 min-h-full overflow-hidden pb-10 md:-m-8">
+    <section className="candy-sky relative -m-4 min-h-full overflow-x-clip pb-10 md:-m-6 lg:grid lg:grid-cols-[minmax(0,1fr)_15.5rem] lg:items-start lg:gap-3">
       <h1 className="sr-only">{t.title}</h1>
 
       {/* sky */}
-      <div aria-hidden="true" className="pointer-events-none absolute right-[6%] top-6 size-36">
+      <div aria-hidden="true" className="pointer-events-none absolute right-[6%] top-6 size-28">
         <div className="candy-rays candy-rays-spin absolute -inset-14 rounded-full" />
         <div className="candy-sun absolute inset-5 rounded-full" />
       </div>
       <div aria-hidden="true" className="candy-drift pointer-events-none absolute left-[4%] top-10"><Cloud width={170} /></div>
       <div aria-hidden="true" className="candy-drift pointer-events-none absolute left-[42%] top-24 opacity-90 [animation-delay:-3s]"><Cloud width={120} /></div>
 
-      {/* HUD: goal, sync, legend */}
-      <div className="relative z-10 flex max-w-5xl flex-wrap gap-4 px-6 pt-6">
-        <div className="candy-goal-card flex flex-[1_1_16rem] flex-col gap-2.5 rounded-[1.75rem] border-4 border-surface px-5 py-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black">{t.goal}</h2>
-            <span className="inline-flex size-10 items-center justify-center rounded-full bg-surface text-xp"><BoltIcon className="size-5" /></span>
+      {/* HUD: goal, sync, legend — a quest column on the right on wide screens */}
+      <aside aria-label={t.goal} className="relative z-10 mx-4 mt-3 flex max-w-4xl flex-wrap items-stretch gap-2.5 md:mx-6 lg:sticky lg:top-3 lg:col-start-2 lg:row-start-1 lg:mx-0 lg:mr-4 lg:flex-col lg:flex-nowrap">
+        <div className="candy-goal-card flex flex-[2_1_15rem] items-center lg:flex-none gap-3 rounded-2xl border-[3px] border-surface px-4 py-2.5">
+          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-surface text-xp"><BoltIcon className="size-5" /></span>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <div className="flex items-baseline justify-between gap-2">
+              <h2 className="text-base font-black">{t.goal}</h2>
+              <p className="text-base font-black">{t.goalValue(today, goal)}</p>
+            </div>
+            <ProgressBar value={today} max={goal} label={t.goal} className="border-surface" />
           </div>
-          <ProgressBar value={today} max={goal} label={t.goal} className="border-surface" />
-          <p className="text-base font-black">{t.goalValue(today, goal)}</p>
         </div>
-        <div className="candy-sync-card flex flex-[1_1_16rem] flex-col gap-2 rounded-[1.75rem] border-4 border-surface px-5 py-4">
-          <div className="flex items-center gap-2.5">
-            <span className="candy-sync-badge inline-flex size-10 items-center justify-center rounded-2xl text-text-on-brand"><ShieldLockIcon className="size-5" /></span>
-            <h2 className="text-lg font-black">{t.sync}</h2>
+        <div className="candy-sync-card flex flex-[1_1_12rem] items-center lg:flex-none gap-2.5 rounded-2xl border-[3px] border-surface px-4 py-2.5">
+          <span className="candy-sync-badge inline-flex size-9 shrink-0 items-center justify-center rounded-xl text-text-on-brand"><ShieldLockIcon className="size-5" /></span>
+          <div className="flex min-w-0 flex-col">
+            <h2 className="text-base font-black">{t.sync}</h2>
+            <p className="sr-only">{t.syncText}</p>
+            <Link to="/profile" className="candy-sync-link text-sm font-black underline underline-offset-4">{t.syncLink}</Link>
           </div>
-          <p className="text-[13px] leading-relaxed">{t.syncText}</p>
-          <Link to="/profile" className="candy-sync-link text-sm font-black underline underline-offset-4">{t.syncLink}</Link>
         </div>
-        <div className="candy-legend-card flex flex-[1_1_12rem] flex-col gap-2 rounded-[1.75rem] border-4 border-surface px-5 py-4 text-[13px]">
-          <h2 className="text-lg font-black">{t.legend}</h2>
-          <p className="flex items-center gap-2.5"><span aria-hidden="true" className="candy-node candy-node-available size-6 rounded-full border-2" />{t.legendItems.available}</p>
-          <p className="flex items-center gap-2.5"><span aria-hidden="true" className="candy-node candy-node-completed size-6 rounded-full border-2" />{t.legendItems.completed}</p>
-          <p className="flex items-center gap-2.5"><span aria-hidden="true" className="candy-node candy-node-locked size-6 rounded-full border-2" />{t.legendItems.locked}</p>
+        <div className="candy-legend-card flex flex-[1_1_100%] flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border-[3px] border-surface px-4 py-2 text-sm md:flex-[1_1_auto] lg:flex-none lg:flex-col lg:items-start">
+          <h2 className="font-black">{t.legend}:</h2>
+          <p className="flex items-center gap-1.5"><span aria-hidden="true" className="candy-node candy-node-available size-4 rounded-full border-2" />{t.legendItems.available}</p>
+          <p className="flex items-center gap-1.5"><span aria-hidden="true" className="candy-node candy-node-completed size-4 rounded-full border-2" />{t.legendItems.completed}</p>
+          <p className="flex items-center gap-1.5"><span aria-hidden="true" className="candy-node candy-node-locked size-4 rounded-full border-2" />{t.legendItems.locked}</p>
         </div>
-      </div>
+      </aside>
 
-      {failed && <p role="alert" className="relative z-10 mx-6 mt-6 rounded-2xl bg-danger-bg p-4 font-bold text-danger-on-bg">{t.loadError}</p>}
-      {!data && !failed && <p className="relative z-10 mx-6 mt-6 font-bold text-text">{t.loading}</p>}
+      {failed && <p role="alert" className="relative z-10 mx-6 mt-6 rounded-2xl bg-danger-bg lg:col-start-1 lg:row-start-1 p-4 font-bold text-danger-on-bg">{t.loadError}</p>}
+      {!data && !failed && <p className="relative z-10 mx-6 mt-6 font-bold text-text lg:col-start-1 lg:row-start-1">{t.loading}</p>}
 
       {data && (
-        <div className="relative mt-6" style={{ height: map.height }}>
+        <div className="relative mt-2 [zoom:0.55] md:[zoom:0.56] lg:col-start-1 lg:row-start-1 lg:mt-3" style={{ height: map.height }}>
           {/* unit worlds, full width */}
           {units.map((unit, ui) => {
             const box = map.units[ui];
@@ -193,7 +195,7 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
                       <>
                         <span aria-hidden="true" className="candy-ring absolute left-0 top-0 size-[6.5rem] rounded-full border-[6px] border-surface" />
                         {!expanded && (
-                          <span aria-hidden="true" className="candy-bubble absolute -top-14 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border-4 border-brand-500 bg-surface px-4 py-1.5 text-base font-black text-brand-fg shadow-[0_4px_0_var(--btn-pink-lip)]">
+                          <span aria-hidden="true" className="candy-bubble absolute left-[calc(100%+0.75rem)] top-[3.25rem] -translate-y-1/2 whitespace-nowrap rounded-full border-4 border-brand-500 bg-surface px-3 py-1 text-sm font-black text-brand-fg shadow-[0_4px_0_var(--btn-pink-lip)]">
                             {t.next}
                           </span>
                         )}

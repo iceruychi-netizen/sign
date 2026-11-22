@@ -15,7 +15,7 @@ export function HoldRing({ progress, label, children }: { progress: number; labe
       aria-valuemax={100}
       aria-valuenow={Math.round(p * 100)}
       data-full={full}
-      className="relative inline-flex size-48 items-center justify-center rounded-full bg-surface shadow-(--card-shadow)"
+      className="relative inline-flex size-32 items-center justify-center rounded-full bg-surface shadow-(--card-shadow)"
     >
       <svg viewBox="0 0 120 120" className="absolute inset-0 -rotate-90" aria-hidden="true">
         <circle cx="60" cy="60" r={R} fill="none" strokeWidth="10" className="stroke-surface-2" />
