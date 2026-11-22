@@ -125,7 +125,7 @@ export function Practice({ factory = realEngineFactory }: { factory?: EngineFact
     <section className="mx-auto grid max-w-5xl items-start gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       <div className="flex min-w-0 flex-col gap-3">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-text">{vi.practice.title}</h1>
+          <h1 className="text-xl font-black tracking-tight text-text">{vi.practice.title}</h1>
           <p className="mt-1 text-sm text-text-muted">{vi.practice.intro}</p>
           <div className="mt-2 flex flex-wrap gap-2 text-xs font-extrabold">
             <span className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-brand-fg">
@@ -149,9 +149,9 @@ export function Practice({ factory = realEngineFactory }: { factory?: EngineFact
             onRetry={() => void camera.start()}
           />
         ) : (
-          <Card className="relative mx-auto flex aspect-[4/3] max-h-[52dvh] w-full max-w-[calc(52dvh*4/3)] flex-col items-center justify-center gap-4 overflow-hidden border-dashed border-brand-300 bg-brand-50/40">
-            <div aria-hidden="true" className="float-slow flex size-20 items-center justify-center rounded-3xl border-2 border-brand-200 bg-surface text-brand-fg shadow-(--card-shadow)">
-              <HandIcon className="size-10" />
+          <Card className="relative mx-auto flex aspect-[4/3] max-h-[calc(100dvh-19rem)] w-full max-w-[calc((100dvh-19rem)*4/3)] flex-col items-center justify-center gap-4 overflow-hidden border-dashed border-brand-300 bg-brand-50/40">
+            <div aria-hidden="true" className="float-slow flex size-14 items-center justify-center rounded-3xl border-2 border-brand-200 bg-surface text-brand-fg shadow-(--card-shadow)">
+              <HandIcon className="size-8" />
             </div>
             <p className="max-w-xs text-center text-sm font-bold text-text-muted">
               Giơ tay trước webcam để nhận diện 21 điểm bàn tay theo thời gian thực
@@ -163,14 +163,14 @@ export function Practice({ factory = realEngineFactory }: { factory?: EngineFact
           </Card>
         )}
         <div className="flex flex-wrap gap-3">
-          {running && <Button variant="secondary" onClick={stopAll}>{vi.practice.stop}</Button>}
-          <Button variant="ghost" onClick={() => setHideSkeleton((h) => !h)}>
+          {running && <Button size="sm" variant="secondary" onClick={stopAll}>{vi.practice.stop}</Button>}
+          <Button size="sm" variant="ghost" onClick={() => setHideSkeleton((h) => !h)}>
             {hideSkeleton ? vi.practice.showSkeleton : vi.practice.hideSkeleton}
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-3 lg:sticky lg:top-20">
+      <div className="flex flex-col items-center gap-3 lg:sticky lg:top-16">
         <Card className="flex w-full flex-col items-center gap-3 p-4">
           <HoldRing progress={typed.progress} label={vi.practice.holdRing}>
             <span aria-label={vi.practice.current} className="text-6xl font-black text-text">
