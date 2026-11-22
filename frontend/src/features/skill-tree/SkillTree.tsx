@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router';
 import { loadActiveManifest } from '@/app/staticData';
 import { BoltIcon, LockIcon, PlayIcon, ShieldLockIcon, StarIcon, TrophyIcon } from '@/components/ui/Icons';
@@ -8,6 +9,7 @@ import { loadCurriculum } from '@/content/loader';
 import type { Curriculum, Lesson } from '@/content/types';
 import { dateKey } from '@/game/streak';
 import { lessonStatus } from '@/game/unlock';
+import { useIsPhone } from '@/hooks/useIsPhone';
 import { vi } from '@/i18n/vi';
 import { useLearner } from '@/storage/useLearner';
 import { CandyDecor, Cloud, Sparkle } from './CandyDecor';
@@ -68,6 +70,10 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
   const road = roadPath(map.points);
   const roadDone = doneUntil > 0 ? roadPath(map.points.slice(0, doneUntil + 1)) : '';
 
+  const isPhone = useIsPhone();
+  /** On phones the lesson card becomes a bottom sheet outside the scaled-down map, so it stays readable and easy to tap. */
+  const placePopover = (el: ReactNode) => (isPhone ? createPortal(el, document.body) : el);
+
   let g = 0;
   return (
     <section className="candy-sky relative -m-4 min-h-full overflow-x-clip pb-10 md:-m-6 lg:grid lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start lg:gap-3">
@@ -96,12 +102,12 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
         <div className="candy-sync-card flex flex-[1_1_12rem] items-center lg:flex-none gap-2.5 rounded-2xl border-[3px] border-surface px-4 py-2.5">
           <span className="candy-sync-badge inline-flex size-9 shrink-0 items-center justify-center rounded-xl text-text-on-brand"><ShieldLockIcon className="size-5" /></span>
           <div className="flex min-w-0 flex-col">
-            <h2 className="text-base font-black">{t.sync}</h2>
+            <h2 className="text-base font-black max-sm:sr-only">{t.sync}</h2>
             <p className="sr-only">{t.syncText}</p>
             <Link to="/profile" className="candy-sync-link text-sm font-black underline underline-offset-4">{t.syncLink}</Link>
           </div>
         </div>
-        <div className="candy-legend-card flex flex-[1_1_100%] flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border-[3px] border-surface px-4 py-2 text-sm md:flex-[1_1_auto] lg:flex-none lg:flex-col lg:items-start">
+        <div className="candy-legend-card flex flex-[1_1_100%] flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border-[3px] border-surface px-4 py-2 text-sm max-sm:gap-x-3 max-sm:py-1.5 max-sm:text-xs md:flex-[1_1_auto] lg:flex-none lg:flex-col lg:items-start">
           <h2 className="font-black">{t.legend}:</h2>
           <p className="flex items-center gap-1.5"><span aria-hidden="true" className="candy-node candy-node-available size-4 shrink-0 rounded-full border-2 shadow-none!" />{t.legendItems.available}</p>
           <p className="flex items-center gap-1.5"><span aria-hidden="true" className="candy-node candy-node-completed size-4 shrink-0 rounded-full border-2 shadow-none!" />{t.legendItems.completed}</p>
@@ -113,7 +119,7 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
       {!data && !failed && <p className="relative z-10 mx-6 mt-6 font-bold text-text lg:col-start-1 lg:row-start-1">{t.loading}</p>}
 
       {data && (
-        <div className="relative mt-2 [zoom:0.55] md:[zoom:0.56] lg:col-start-1 lg:row-start-1 lg:mt-3" style={{ height: map.height }}>
+        <div className="relative mt-2 [zoom:0.7] md:[zoom:0.56] lg:col-start-1 lg:row-start-1 lg:mt-3" style={{ height: map.height }}>
           {/* unit worlds, full width */}
           {units.map((unit, ui) => {
             const box = map.units[ui];
@@ -123,7 +129,7 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
                 <div className="absolute -bottom-20 -left-[12%] h-52 w-[72%] rounded-[50%] bg-[var(--w-h1)] opacity-60" />
                 <div className="absolute -bottom-24 -right-[14%] h-56 w-[78%] rounded-[50%] bg-[var(--w-h2)] opacity-65" />
                 <div className="candy-zone-dots absolute inset-0 opacity-60" />
-                <span className="candy-flag absolute left-5 top-14 rounded-2xl border-[3px] border-surface bg-surface/90 px-3.5 py-1.5 text-base font-black">{t.worlds[ui % 3]}</span>
+                <span className="candy-flag absolute left-5 top-14 max-sm:hidden rounded-2xl border-[3px] border-surface bg-surface/90 px-3.5 py-1.5 text-base font-black">{t.worlds[ui % 3]}</span>
                 {box.decor.map((d, i) => (
                   <div key={i} className={`absolute z-[1] ${d.float ? 'float-slow' : ''}`} style={{ left: `${d.left}%`, top: d.top, animationDelay: `-${d.delay.toFixed(1)}s` }}>
                     <CandyDecor kind={d.kind} c1={d.c1} c2={d.c2} width={DECOR_SIZE[d.kind][0]} height={DECOR_SIZE[d.kind][1]} />
@@ -218,13 +224,13 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
                       </span>
                     )}
 
-                    {expanded && (
+                    {expanded && placePopover(
                       <div
                         role="group"
                         aria-label={t.popover(lesson.title)}
                         onKeyDown={(e) => e.key === 'Escape' && setOpen(null)}
-                        className={`popover-pop absolute left-1/2 flex w-72 flex-col items-center gap-2.5 rounded-[1.75rem] border-[5px] bg-surface p-[18px] text-center ${locked ? 'candy-popover-locked border-[var(--candy-locked-chip)]' : 'candy-popover border-brand-200'}`}
-                        style={{ top: size + 70, transform: `translateX(calc(-50% + ${shift}px))` }}
+                        className={`popover-pop ${isPhone ? 'fixed inset-x-3 bottom-[6.5rem] z-50 mx-auto max-w-sm' : 'absolute left-1/2 w-72'} flex flex-col items-center gap-2.5 rounded-[1.75rem] border-[5px] bg-surface p-[18px] text-center ${locked ? 'candy-popover-locked border-[var(--candy-locked-chip)]' : 'candy-popover border-brand-200'}`}
+                        style={isPhone ? undefined : { top: size + 70, transform: `translateX(calc(-50% + ${shift}px))` }}
                       >
                         <p className="text-xs font-black uppercase tracking-[0.12em] text-brand-fg">{t.level(unit.level)} · {unit.title}</p>
                         <p className="text-[1.4rem] font-black text-text">{lesson.title}</p>

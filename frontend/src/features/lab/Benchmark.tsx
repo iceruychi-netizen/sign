@@ -26,7 +26,7 @@ export function Benchmark({ runs, datasets }: { runs: Run[]; datasets: string[] 
       {rows.length === 0 ? <p>{t.none}</p> : (
         <>
           <Card className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
+            <table className="w-full min-w-[640px] whitespace-nowrap text-left text-sm">
               <caption className="pb-3 text-left text-base font-black text-text">{t.caption}</caption>
               <thead>
                 <tr className="text-xs uppercase tracking-wider text-text-muted">

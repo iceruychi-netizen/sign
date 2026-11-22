@@ -8,13 +8,15 @@ import { StatChip } from '@/components/ui/StatChip';
 type NavItem = {
   to: string;
   label: string;
+  /** Shorter text for the phone dock, where space is tight; the full label stays the accessible name. */
+  short?: string;
   Icon: ComponentType<SVGProps<SVGSVGElement>>;
 };
 
 export const NAV_ITEMS: readonly NavItem[] = [
   { to: '/learn', label: vi.nav.learn, Icon: HomeIcon },
   { to: '/practice', label: vi.nav.practice, Icon: HandIcon },
-  { to: '/alphabet', label: vi.nav.alphabet, Icon: AlphabetIcon },
+  { to: '/alphabet', label: vi.nav.alphabet, short: vi.nav.alphabetShort, Icon: AlphabetIcon },
   { to: '/leaderboard', label: vi.nav.leaderboard, Icon: TrophyIcon },
   { to: '/lab', label: vi.nav.lab, Icon: LabIcon },
   { to: '/profile', label: vi.nav.profile, Icon: UserIcon },
@@ -61,7 +63,7 @@ function SidebarNav() {
 function BottomNav() {
   return (
     <ul className="flex items-center justify-around gap-1">
-      {NAV_ITEMS.map(({ to, label, Icon }) => (
+      {NAV_ITEMS.map(({ to, label, short, Icon }) => (
         <li key={to} className="min-w-0 flex-1">
           <NavLink
             to={to}
@@ -81,7 +83,7 @@ function BottomNav() {
                 >
                   <Icon className="size-5" />
                 </span>
-                <span className="max-w-full truncate">{label}</span>
+                <span className="max-w-full truncate">{short ?? label}</span>
               </>
             )}
           </NavLink>
@@ -141,7 +143,7 @@ export function AppShell({ stats, banner, account }: { stats: Stats; banner?: Re
             </div>
           </header>
           {banner}
-          <main id="main" className="flex-1 p-4 md:p-6">
+          <main id="main" className="flex-1 p-3 sm:p-4 md:p-6">
             <div key={pathname} className="page-enter">
               <Outlet />
             </div>

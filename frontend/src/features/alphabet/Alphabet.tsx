@@ -71,23 +71,23 @@ function SignDetail({ signs, symbol }: { signs: Sign[]; symbol: string }) {
 function SignGrid({ items }: { items: Sign[] }) {
   const t = vi.alphabet;
   return (
-    <ul className="grid grid-cols-3 gap-3.5 sm:grid-cols-4 lg:grid-cols-6">
+    <ul className="grid grid-cols-4 gap-2 sm:grid-cols-4 sm:gap-3.5 lg:grid-cols-6">
       {items.map((s) => (
         <li key={s.code}>
           <Link
             to={`/alphabet/${s.gloss}`}
             aria-label={t.open(s.gloss)}
-            className="group relative flex flex-col items-center gap-2 rounded-3xl border-2 border-border bg-surface p-3.5 shadow-(--card-shadow) transition-[transform,border-color,background-color,box-shadow] duration-(--motion-fast) hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50/50 hover:shadow-(--card-shadow-hover)"
+            className="group relative flex flex-col items-center gap-2 rounded-3xl border-2 border-border bg-surface p-2 shadow-(--card-shadow) sm:p-3.5 transition-[transform,border-color,background-color,box-shadow] duration-(--motion-fast) hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50/50 hover:shadow-(--card-shadow-hover)"
           >
             {s.kind === 'dynamic' && (
               <span className="btn-pink absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase text-ink-on-pink shadow-none">
                 {t.dynamicBadge}
               </span>
             )}
-            <span aria-hidden="true" className="flex size-10 items-center justify-center rounded-full bg-brand-50 text-xl font-black text-brand-fg transition-colors group-hover:bg-brand-200/70 group-hover:text-ink-on-pink">
+            <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-full bg-brand-50 text-base font-black text-brand-fg transition-colors sm:size-10 sm:text-xl group-hover:bg-brand-200/70 group-hover:text-ink-on-pink">
               {s.gloss}
             </span>
-            <Hand sign={s} className="size-20 transition-transform duration-(--motion-bounce) group-hover:-rotate-3 group-hover:scale-110" />
+            <Hand sign={s} className="size-14 transition-transform sm:size-20 duration-(--motion-bounce) group-hover:-rotate-3 group-hover:scale-110" />
           </Link>
         </li>
       ))}

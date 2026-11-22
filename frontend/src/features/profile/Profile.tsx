@@ -64,16 +64,16 @@ export function Profile({ labels: given, now = () => new Date() }: { labels?: st
         </Link>
       </Card>
 
-      <dl className="grid grid-cols-3 gap-3.5">
+      <dl className="grid grid-cols-3 gap-2 sm:gap-3.5">
         {([[t.xp, String(stats.total_xp)], [t.streak, t.days(stats.current_streak)], [t.longest, t.days(stats.longest_streak)]] as const).map(([k, v], idx) => {
           const { Icon, bg } = STAT_ICONS[idx];
           return (
-            <Card key={k} className="flex flex-col items-center gap-1.5 p-4 text-center">
+            <Card key={k} className="flex flex-col items-center gap-1.5 p-2.5 text-center sm:p-4">
               <span aria-hidden="true" className={`inline-flex size-9 items-center justify-center rounded-xl ${bg}`}>
                 <Icon className="size-5" />
               </span>
-              <dt className="text-xs font-extrabold uppercase tracking-wider text-text-muted">{k}</dt>
-              <dd className="text-2xl font-black tabular-nums text-brand-fg">{v}</dd>
+              <dt className="text-[11px] font-extrabold uppercase leading-tight tracking-wide text-text-muted sm:text-xs sm:tracking-wider">{k}</dt>
+              <dd className="text-lg font-black tabular-nums leading-tight text-brand-fg sm:text-2xl">{v}</dd>
             </Card>
           );
         })}

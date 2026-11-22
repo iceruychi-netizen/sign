@@ -7,7 +7,7 @@ export const vi = {
   common: { loading: 'Đang tải…', comingSoon: 'Màn hình này đang được xây dựng.', notFound: 'Không tìm thấy trang', startupError: 'Không tải được dữ liệu khởi động' },
   theme: { label: 'Giao diện', system: 'Hệ thống', light: 'Sáng', dark: 'Tối' },
   nav: {
-    learn: 'Học', practice: 'Luyện', alphabet: 'Bảng chữ cái', leaderboard: 'Hạng', lab: 'AI Lab', profile: 'Hồ sơ', settings: 'Cài đặt',
+    learn: 'Học', practice: 'Luyện', alphabet: 'Bảng chữ cái', alphabetShort: 'Chữ cái', leaderboard: 'Hạng', lab: 'AI Lab', profile: 'Hồ sơ', settings: 'Cài đặt',
     skip: 'Bỏ qua điều hướng', sidebar: 'Điều hướng chính', bottom: 'Điều hướng nhanh',
   },
   camera: {

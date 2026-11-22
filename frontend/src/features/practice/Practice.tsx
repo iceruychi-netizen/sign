@@ -171,13 +171,13 @@ export function Practice({ factory = realEngineFactory }: { factory?: EngineFact
       </div>
 
       <div className="flex flex-col items-center gap-3 lg:sticky lg:top-16">
-        <Card className="flex w-full flex-col items-center gap-3 p-4">
+        <Card className="flex w-full flex-row items-center gap-3 p-3 sm:flex-col sm:p-4">
           <HoldRing progress={typed.progress} label={vi.practice.holdRing}>
             <span aria-label={vi.practice.current} className="text-6xl font-black text-text">
               {dynamicFlash ?? p?.label ?? vi.practice.none}
             </span>
           </HoldRing>
-          <div className="w-full">
+          <div className="min-w-0 flex-1 sm:w-full">
             <PredictionBars items={p?.topK ?? []} caption={vi.practice.top3} />
           </div>
         </Card>
