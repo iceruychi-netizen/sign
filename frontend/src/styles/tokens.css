@@ -140,6 +140,26 @@
   --candy-w3-ribbon: linear-gradient(180deg, #7a55e0 0%, #4a2aa8 100%); --candy-w3-lip: #3b1f94;
   --candy-w3-c1: #9b7bf0; --candy-w3-c2: #ff9f43; --candy-w3-c3: #ff6f9f; --candy-w3-c4: #ffd23f; --candy-w3-c5: #5fd3a8;
 
+
+  /* Kawaii shell: pastel sky, cream "window" with cat ears, dashed candy borders, mascot Lingo */
+  --kw-sky: linear-gradient(180deg, #bfe6f7 0%, #dff1fa 320px, #fde7ef 900px);
+  --kw-cloud: rgba(255, 255, 255, 0.85);
+  --kw-cream: #fffaf5;
+  --kw-butter: #fff3cf;
+  --kw-butter-ink: #6b4a00;
+  --kw-line: #f0b3c6;
+  --kw-line-soft: #f3d6df;
+  --kw-dash: #e7a3ba;
+  --kw-ear-inner: #ffd2df;
+  --kw-ink: #4a3540;
+  --kw-title: #c2456f;
+  --kw-window-shadow: 0 6px 0 #f0b3c6;
+  --kw-card-shadow: 0 4px 0 #f3d6df, 0 10px 22px -16px rgba(122, 74, 92, 0.35);
+  --kw-card-shadow-hover: 0 6px 0 #f0b3c6, 0 16px 28px -14px rgba(194, 69, 111, 0.35);
+  --kw-stripe: repeating-linear-gradient(135deg, #ffc9d8 0 12px, #ffffff 12px 24px);
+  --kw-gingham: repeating-linear-gradient(0deg, rgba(255, 201, 216, 0.35) 0 14px, transparent 14px 28px), repeating-linear-gradient(90deg, rgba(255, 201, 216, 0.35) 0 14px, transparent 14px 28px), #fffaf5;
+  --kw-scallop: radial-gradient(circle at 12px 0, #f0b3c6 11px, transparent 12px);
+
   accent-color: var(--brand-600);
   scrollbar-color: var(--brand-600) var(--surface-2);
 }

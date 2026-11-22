@@ -288,3 +288,35 @@
   .candy-rays-spin { animation: candy-spin 60s linear infinite; }
   .candy-bubble { animation: candy-bubble 1.8s ease-in-out infinite; }
 }
+
+/* ---------- Kawaii shell (Lingo the cat) ---------- */
+.kw-sky { background-image: var(--kw-sky); background-attachment: fixed; }
+.kw-clouds::before,
+.kw-clouds::after {
+  content: '';
+  position: absolute;
+  border-radius: 999px;
+  background: var(--kw-cloud);
+  box-shadow: 40px -14px 0 6px var(--kw-cloud), 86px 0 0 -2px var(--kw-cloud);
+  width: 90px;
+  height: 34px;
+}
+.kw-clouds::before { left: 6%; top: 90px; }
+.kw-clouds::after { right: 14%; top: 220px; transform: scale(0.8); }
+.kw-window { background: var(--kw-cream); border: 3px solid var(--kw-line); box-shadow: var(--kw-window-shadow); }
+.kw-titlebar { background: var(--kw-butter); border-bottom: 3px dashed var(--kw-line); }
+.kw-stripe { background-image: var(--kw-stripe); }
+.kw-gingham { background: var(--kw-gingham); }
+.kw-scallop { height: 12px; background-image: var(--kw-scallop); background-size: 24px 12px; background-repeat: repeat-x; }
+.kw-dashed { border: 2px dashed var(--kw-dash); }
+.kw-title { color: var(--kw-title); }
+
+@keyframes kw-hop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes kw-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes kw-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+.mascot-hop { animation: kw-hop 2.4s ease-in-out infinite; }
+.mascot-sway { animation: kw-sway 3.2s ease-in-out infinite; transform-origin: 50% 90%; }
+.mascot-breathe { animation: kw-breathe 3.6s ease-in-out infinite; transform-origin: 50% 100%; }
+@media (prefers-reduced-motion: reduce) {
+  .mascot-hop, .mascot-sway, .mascot-breathe { animation: none; }
+}
