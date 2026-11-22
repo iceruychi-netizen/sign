@@ -83,6 +83,63 @@
   --motion-base: 220ms;
   --motion-bounce: 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
+  /* Candy map (learning path): sky, three unit worlds, candy lesson nodes */
+  --candy-sky: linear-gradient(180deg, #8fdcff 0%, #c9efff 260px, #ffe3ee 520px);
+  --candy-sun: radial-gradient(circle at 38% 35%, #fffbe0 0 18%, #ffe066 40%, #ffbf00 100%);
+  --candy-sun-glow: 0 0 0 10px rgba(255, 236, 150, 0.5), 0 0 60px 20px rgba(255, 214, 80, 0.55);
+  --candy-rays: repeating-conic-gradient(rgba(255, 255, 255, 0.55) 0 10deg, rgba(255, 255, 255, 0) 10deg 22deg);
+  --candy-white: #ffffff;
+  --candy-path-shadow: rgba(156, 90, 120, 0.25);
+  --candy-path-bed: #e7dcf5;
+  --candy-path-done: #ff7aa8;
+  --candy-cookie: #f6c58f;
+  --candy-cone: #f2b46a;
+  --candy-cone-line: #c9803a;
+  --candy-dough: #d98e4a;
+  --candy-cherry: #e8173f;
+  --candy-sprinkle-1: #ffe066;
+  --candy-sprinkle-2: #7dd3fc;
+  --candy-node-available: radial-gradient(circle at 34% 28%, #ffe1eb 0 10%, #ff9fbe 26%, #f5508a 60%, #c41f5e 100%);
+  --candy-node-available-shadow: 0 8px 0 #85103d, 0 18px 28px -8px rgba(196, 31, 94, 0.65), inset 0 -8px 0 rgba(0, 0, 0, 0.12);
+  --candy-node-available-lip: #85103d;
+  --candy-node-completed: radial-gradient(circle at 34% 28%, #fff8cc 0 10%, #ffd84d 24%, #f5b301 58%, #cf7f00 100%);
+  --candy-node-completed-shadow: 0 8px 0 #9a5a00, 0 16px 24px -8px rgba(154, 90, 0, 0.6), inset 0 -8px 0 rgba(0, 0, 0, 0.1);
+  --candy-node-completed-lip: #9a5a00;
+  --candy-node-locked: radial-gradient(circle at 34% 28%, #ffffff 0 10%, #f1ebfb 26%, #d9cff0 62%, #bcaee0 100%);
+  --candy-node-locked-shadow: 0 7px 0 #9a88c4, inset 0 -6px 0 rgba(0, 0, 0, 0.06);
+  --candy-locked-ink: #4a3a6b;
+  --candy-locked-chip: #ece5f8;
+  --candy-gold: #f5b301;
+  --candy-gold-lip: #c27c00;
+  --candy-goal-card: linear-gradient(180deg, #fffdf2 0%, #ffe9a3 100%);
+  --candy-goal-shadow: 0 6px 0 #e9b52f, 0 18px 30px -16px rgba(168, 98, 0, 0.6);
+  --candy-goal-ink: #5c2e00;
+  --candy-sync-card: linear-gradient(180deg, #ffffff 0%, #e6dcff 100%);
+  --candy-sync-shadow: 0 6px 0 #b7a2ea, 0 18px 30px -16px rgba(91, 63, 176, 0.55);
+  --candy-sync-ink: #2e1a5e;
+  --candy-sync-link: #4a2aa8;
+  --candy-sync-badge: radial-gradient(circle at 35% 30%, #ffffff 0 10%, #c4b0ff 11%, #8b6be0 75%);
+  --candy-legend-card: linear-gradient(180deg, #ffffff 0%, #d4f7e8 100%);
+  --candy-legend-shadow: 0 6px 0 #7fd6b2, 0 18px 30px -16px rgba(11, 107, 74, 0.45);
+  --candy-legend-ink: #064e36;
+  --candy-stripe-gold: repeating-linear-gradient(135deg, #ffd23f 0 10px, #ffb800 10px 20px);
+  --candy-popover-shadow: 0 8px 0 #f08fb2, 0 24px 44px -14px rgba(43, 10, 24, 0.4);
+  --candy-popover-locked-shadow: 0 8px 0 #bcaee0, 0 24px 44px -14px rgba(43, 10, 24, 0.4);
+
+  /* Unit worlds: strawberry (1), mint (2), grape (3) */
+  --candy-w1-bg: linear-gradient(180deg, #ffd0e2 0%, #ffe4ee 40%, #ffc0d6 100%);
+  --candy-w1-back: #ffb3cb; --candy-w1-h1: #ff8fb3; --candy-w1-h2: #ffa8c5;
+  --candy-w1-ribbon: linear-gradient(180deg, #d63672 0%, #a3154a 100%); --candy-w1-lip: #8a1040;
+  --candy-w1-c1: #ff6f9f; --candy-w1-c2: #ffd23f; --candy-w1-c3: #7dd3fc; --candy-w1-c4: #ff9f43; --candy-w1-c5: #b18cff;
+  --candy-w2-bg: linear-gradient(180deg, #bff3df 0%, #e4fff3 45%, #9de9cb 100%);
+  --candy-w2-back: #8ee3c3; --candy-w2-h1: #4fd1a5; --candy-w2-h2: #7fdcb9;
+  --candy-w2-ribbon: linear-gradient(180deg, #0e8a5f 0%, #06573b 100%); --candy-w2-lip: #05482f;
+  --candy-w2-c1: #34c38f; --candy-w2-c2: #ff8fb3; --candy-w2-c3: #ffd23f; --candy-w2-c4: #7dd3fc; --candy-w2-c5: #ff9f43;
+  --candy-w3-bg: linear-gradient(180deg, #dccfff 0%, #f1ebff 45%, #ffd0b5 100%);
+  --candy-w3-back: #c9b6ff; --candy-w3-h1: #a98bf5; --candy-w3-h2: #ffb38a;
+  --candy-w3-ribbon: linear-gradient(180deg, #7a55e0 0%, #4a2aa8 100%); --candy-w3-lip: #3b1f94;
+  --candy-w3-c1: #9b7bf0; --candy-w3-c2: #ff9f43; --candy-w3-c3: #ff6f9f; --candy-w3-c4: #ffd23f; --candy-w3-c5: #5fd3a8;
+
   accent-color: var(--brand-600);
   scrollbar-color: var(--brand-600) var(--surface-2);
 }

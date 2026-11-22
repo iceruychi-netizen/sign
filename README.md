@@ -37,7 +37,7 @@ Mở địa chỉ `Local:` mà terminal in ra (thường là `http://localhost:5
 | `/alphabet` | Bảng chữ cái: hình mẫu từng chữ |
 | `/leaderboard` | Bảng xếp hạng (cần đăng nhập) |
 | `/lab` | AI Lab: so sánh mô hình, ma trận nhầm, rò rỉ dữ liệu, đo FPS |
-| `/login`, `/profile`, `/settings` | Đăng nhập, hồ sơ và tài khoản, cài đặt |
+| `/login`, `/register`, `/profile`, `/settings` | Đăng nhập, đăng ký, hồ sơ và tài khoản, cài đặt |
 | `/collect` | Thu mẫu landmark cho nhóm (xem `CONTRIBUTING.md`) |
 
 Muốn thử đăng nhập khi chạy cục bộ: chép `frontend/.env.example` thành `frontend/.env.local` và điền `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (khóa công khai; không bao giờ dùng khóa `service_role`).

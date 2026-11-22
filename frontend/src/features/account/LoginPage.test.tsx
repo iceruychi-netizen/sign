@@ -17,10 +17,11 @@ const api = (user: AccountUser | null) => ({
   leaderboardFor: vi.fn(),
 }) satisfies AuthApi;
 
-const show = (store: ReturnType<typeof createAccountStore>) => render(
-  <MemoryRouter initialEntries={['/login']}>
+const show = (store: ReturnType<typeof createAccountStore>, path = '/login') => render(
+  <MemoryRouter initialEntries={[path]}>
     <Routes>
       <Route path="/login" element={<LoginPage store={store} />} />
+      <Route path="/register" element={<LoginPage store={store} mode="register" />} />
       <Route path="/learn" element={<h1>Lộ trình</h1>} />
     </Routes>
   </MemoryRouter>,
@@ -36,6 +37,15 @@ describe('LoginPage', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Đăng nhập' })).toBeInTheDocument();
     expect(await screen.findByLabelText('Email')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Học tiếp không cần đăng nhập' })).toHaveAttribute('href', '/learn');
+  });
+
+  it('has a separate sign-up page that creates the account', async () => {
+    const store = createAccountStore({ api: api(null), local });
+    void store.getState().start();
+    show(store, '/register');
+    expect(screen.getByRole('heading', { level: 1, name: 'Đăng ký' })).toBeInTheDocument();
+    expect(await screen.findByLabelText('Nhập lại mật khẩu')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tạo tài khoản' })).toBeInTheDocument();
   });
 
   it('goes to the learning path once signed in', async () => {

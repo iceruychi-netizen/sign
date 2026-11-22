@@ -113,7 +113,8 @@ Không dùng Radix ngoài `@radix-ui/react-slot` (cho `Button asChild`); hộp t
 /features         → Tính năng                                          [menu giới thiệu]
 /how-it-works     → Cách hoạt động & quyền riêng tư, câu hỏi thường gặp [menu giới thiệu]
 /about            → Giới thiệu & Liên hệ (nhóm, MSSV, phụ trách, email trưởng nhóm, GitHub) [menu giới thiệu]
-/login            → Đăng nhập / Đăng ký (đăng nhập xong chuyển /learn; ẩn khi chưa cấu hình Supabase)
+/login            → Đăng nhập (đăng nhập xong chuyển /learn; báo tắt khi chưa cấu hình Supabase)
+/register         → Đăng ký tài khoản (email, mật khẩu, nhập lại mật khẩu; xong chuyển /learn)
 /learn            → Dashboard lộ trình (Skill Tree)            [Tab: Học]
 /lesson/:code     → Lesson Player (toàn màn, không nav; màn kết quả nằm trong cùng route)
 /practice         → Luyện tự do                                [Tab: Luyện]
@@ -218,7 +219,8 @@ Tabs: **Benchmark · Phân tích lỗi · Live Monitor · Data Leakage · Về d
 Avatar chữ cái đầu (từ tên hiển thị tùy chọn), tổng XP, streak dài nhất, heatmap hoạt động 12 tuần (màu brand), bảng "độ thành thạo" từng chữ (vòng % đúng). Bên dưới: thẻ **Tài khoản** (`AccountCard`) và thẻ **Tham gia bảng xếp hạng** (`JoinCard`, ô tên hiển thị 2–24 ký tự, đồng bộ trước khi bật).
 
 ### 5.6b Đăng nhập (`/login`) và Bảng xếp hạng (`/leaderboard`)
-- `/login`: trang riêng, logo + "Đăng nhập" + `AccountCard` + link "Học tiếp không cần đăng nhập". Đăng nhập/đăng ký xong chuyển `/learn`.
+- `/login`: trang riêng, logo + "Đăng nhập" + `AccountCard` (chỉ nút Đăng nhập, dòng "Chưa có tài khoản? Tạo tài khoản" dẫn `/register`) + link "Học tiếp không cần đăng nhập". Sai email/mật khẩu hoặc chưa có tài khoản: báo "Sai email hoặc mật khẩu. Chưa có tài khoản thì hãy đăng ký trước."
+- `/register`: cùng bố cục, `AccountCard mode="register"`: email, mật khẩu, nhập lại mật khẩu (phải khớp), nút "Tạo tài khoản", dòng "Đã có tài khoản? Đăng nhập". Email đã có tài khoản: báo hãy đăng nhập. Xong chuyển `/learn`.
 - `/leaderboard`: tab **Tuần này · Tổng XP · Chuỗi ngày · Độ chính xác** (chọn "Tất cả" hoặc một chữ). Hàng của mình gắn nhãn "Bạn". Chưa đăng nhập → mời đăng nhập; chưa ai đủ điều kiện → trạng thái trống.
 
 ### 5.7 Cài đặt (`/settings`)

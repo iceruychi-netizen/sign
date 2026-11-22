@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EyeIcon, EyeOffIcon, ShieldLockIcon, SparkleIcon } from '@/components/ui/Icons';
@@ -7,10 +8,11 @@ import type { AccountStore } from '@/sync/account';
 import { googleEnabled } from '@/sync/supabase';
 import { accountStore } from '@/sync/useAccount';
 
+const LINK = 'font-extrabold text-brand-fg underline underline-offset-2 hover:text-brand-500';
 const INPUT = 'min-h-12 w-full rounded-2xl border-2 border-border bg-surface px-4 text-base font-bold text-text transition-colors hover:border-brand-300 focus:border-brand-500';
 
-/** Optional account: sign in to keep progress across devices. Renders nothing when sync is not configured. */
-export function AccountCard({ store = accountStore(), google = googleEnabled }: { store?: AccountStore; google?: boolean }) {
+/** Optional account: sign in (mode "login") or create one (mode "register") to keep progress across devices. Renders nothing when sync is not configured. */
+export function AccountCard({ store = accountStore(), google = googleEnabled, mode = 'login' }: { store?: AccountStore; google?: boolean; mode?: 'login' | 'register' }) {
   const t = vi.account;
   const status = store((s) => s.status);
   const user = store((s) => s.user);
@@ -21,12 +23,20 @@ export function AccountCard({ store = accountStore(), google = googleEnabled }: 
   const busy = store((s) => s.busy);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [again, setAgain] = useState('');
+  const [mismatch, setMismatch] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (status === 'disabled') return null;
   const account = store.getState();
-  const submit = (e: FormEvent) => { e.preventDefault(); void account.signInWithPassword(email.trim(), password); };
+  const register = mode === 'register';
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!register) return void account.signInWithPassword(email.trim(), password);
+    setMismatch(password !== again);
+    if (password === again) void account.signUp(email.trim(), password);
+  };
 
   return (
     <Card className="flex flex-col gap-4">
@@ -52,7 +62,7 @@ export function AccountCard({ store = accountStore(), google = googleEnabled }: 
             message === 'confirm_email' ? 'bg-brand-50 text-brand-fg' : 'bg-danger-bg/70 text-danger-on-bg'
           }`}
         >
-          {t.messages[message]}
+          {message === 'auth_failed' && register ? t.signUpFailed : t.messages[message]}
         </p>
       )}
       {message === 'auth_failed' && detail && <p className="text-xs font-bold text-text-muted">{t.detail(detail)}</p>}
@@ -79,7 +89,7 @@ export function AccountCard({ store = accountStore(), google = googleEnabled }: 
               <label htmlFor="account-password" className="text-sm font-extrabold text-text">{t.password}</label>
               <div className="relative">
                 <input
-                  id="account-password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" required minLength={8}
+                  id="account-password" type={showPassword ? 'text' : 'password'} autoComplete={register ? 'new-password' : 'current-password'} required minLength={8}
                   value={password} onChange={(e) => setPassword(e.target.value)} className={`${INPUT} pr-12`}
                 />
                 <button
@@ -91,10 +101,18 @@ export function AccountCard({ store = accountStore(), google = googleEnabled }: 
                 </button>
               </div>
             </div>
-            <div className="flex flex-wrap gap-3 pt-1">
-              <Button type="submit" disabled={busy}>{t.signIn}</Button>
-              <Button variant="secondary" disabled={busy || !email || password.length < 8} onClick={() => void account.signUp(email.trim(), password)}>{t.signUp}</Button>
-            </div>
+            {register && (
+              <label className="flex flex-col gap-1.5 text-sm font-extrabold text-text">
+                {t.passwordAgain}
+                <input type={showPassword ? 'text' : 'password'} autoComplete="new-password" required minLength={8} value={again} onChange={(e) => setAgain(e.target.value)} className={INPUT} />
+              </label>
+            )}
+            {register && mismatch && <p role="alert" className="text-sm font-bold text-danger-on-bg">{t.mismatch}</p>}
+            <Button type="submit" disabled={busy} className="self-start">{register ? t.signUp : t.signIn}</Button>
+            <p className="text-sm font-bold text-text-muted">
+              {register ? t.haveAccount : t.noAccount}{' '}
+              <Link to={register ? '/login' : '/register'} className={LINK}>{register ? t.signIn : t.signUp}</Link>
+            </p>
           </form>
         </>
       )}

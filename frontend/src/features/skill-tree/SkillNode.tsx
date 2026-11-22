@@ -1,28 +1,24 @@
-import type { ComponentType, SVGProps } from 'react';
-import { LockIcon, PlayIcon, SparkleIcon, StarIcon } from '@/components/ui/Icons';
+import { LockIcon } from '@/components/ui/Icons';
 import { vi } from '@/i18n/vi';
 import type { LessonStatus } from '@/game/unlock';
 
-const STYLE: Record<LessonStatus, string> = {
-  locked: 'border-border bg-surface-2 text-text-muted shadow-[0_4px_0_var(--border)]',
-  available: 'node-available node-halo border-surface text-ink-on-pink hover:-translate-y-0.5',
-  in_progress: 'border-warning-fg bg-warning-bg text-warning-fg shadow-[0_4px_0_var(--border-strong)] hover:-translate-y-0.5',
-  completed: 'border-success-fg bg-success-bg text-success-fg shadow-[0_4px_0_var(--border)] hover:-translate-y-0.5',
+/** Candy look per status; in_progress shares the "open" candy since the lesson can be continued. */
+const LOOK: Record<LessonStatus, { node: string; num: string }> = {
+  locked: { node: 'candy-node-locked cursor-not-allowed', num: '' },
+  available: { node: 'candy-node-available cursor-pointer', num: 'candy-num-available' },
+  in_progress: { node: 'candy-node-available cursor-pointer', num: 'candy-num-available' },
+  completed: { node: 'candy-node-completed cursor-pointer', num: 'candy-num-completed' },
 };
 
-const ICON: Record<LessonStatus, ComponentType<SVGProps<SVGSVGElement>>> = {
-  locked: LockIcon,
-  available: PlayIcon,
-  in_progress: SparkleIcon,
-  completed: StarIcon,
-};
-
-/** One lesson on the path. The status is always spelled out in the accessible name, never only by colour. */
-export function SkillNode({ title, status, expanded, onSelect }: {
-  title: string; status: LessonStatus; expanded: boolean; onSelect: () => void;
+/**
+ * One lesson on the candy map: a round glossy sweet with the lesson number (a lock when closed).
+ * The status is always spelled out in the accessible name, never only by colour.
+ */
+export function SkillNode({ title, status, expanded, onSelect, number, big = false }: {
+  title: string; status: LessonStatus; expanded: boolean; onSelect: () => void; number: number; big?: boolean;
 }) {
   const locked = status === 'locked';
-  const Icon = ICON[status];
+  const look = LOOK[status];
   return (
     <button
       type="button"
@@ -30,9 +26,14 @@ export function SkillNode({ title, status, expanded, onSelect }: {
       aria-expanded={expanded}
       data-status={status}
       onClick={onSelect}
-      className={`flex size-[4.5rem] cursor-pointer items-center justify-center rounded-full border-4 transition-[transform,box-shadow] duration-(--motion-fast) active:translate-y-1 active:shadow-none ${STYLE[status]} ${locked ? 'cursor-not-allowed active:translate-y-0' : ''}`}
+      className={`candy-node relative flex shrink-0 items-center justify-center overflow-hidden rounded-full p-0 transition-transform duration-(--motion-fast) ${big ? 'size-[6.5rem]' : 'size-[5.625rem]'} ${look.node} ${locked ? '' : 'hover:-translate-y-1 hover:scale-105 active:translate-y-1'}`}
     >
-      <Icon className="size-7" />
+      <span aria-hidden="true" className="absolute left-[18%] top-[12%] h-[20%] w-[34%] -rotate-[25deg] rounded-full bg-surface/55" />
+      {locked ? (
+        <LockIcon className="relative size-8" />
+      ) : (
+        <span aria-hidden="true" className={`relative font-black leading-none ${big ? 'text-5xl' : 'text-[2.4rem]'} ${look.num}`}>{number}</span>
+      )}
     </button>
   );
 }

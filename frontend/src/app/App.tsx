@@ -103,6 +103,7 @@ export function AppRoutes() {
       <Route path="how-it-works" element={<HowItWorksRoute />} />
       <Route path="about" element={<AboutRoute />} />
       <Route path="login" element={<LoginPage />} />
+      <Route path="register" element={<LoginPage mode="register" />} />
       {import.meta.env.DEV && <Route path="dev/hands" element={<HandSheet />} />}
       <Route path="lesson/:code" element={<LessonPlayer />} />
       <Route element={<ConnectedShell />}>

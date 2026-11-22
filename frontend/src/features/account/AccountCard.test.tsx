@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 import { createAccountStore } from '@/sync/account';
 import type { AccountUser, AuthApi } from '@/sync/supabase';
@@ -6,7 +7,7 @@ import { AccountCard } from './AccountCard';
 
 const USER: AccountUser = { id: 'u1', email: 'an@example.com' };
 
-const setup = (over: Partial<AuthApi> = {}, user: AccountUser | null = null) => {
+const setup = (over: Partial<AuthApi> = {}, user: AccountUser | null = null, mode: 'login' | 'register' = 'login') => {
   const api = {
     getUser: vi.fn(async () => user),
     onChange: vi.fn(() => () => {}),
@@ -21,7 +22,7 @@ const setup = (over: Partial<AuthApi> = {}, user: AccountUser | null = null) => 
   } satisfies AuthApi;
   const store = createAccountStore({ api, local: { readData: () => ({}), applyData: vi.fn() } });
   void store.getState().start();
-  return { api, store, ...render(<AccountCard store={store} google />) };
+  return { api, store, ...render(<MemoryRouter><AccountCard store={store} google mode={mode} /></MemoryRouter>) };
 };
 
 describe('AccountCard', () => {
@@ -54,7 +55,7 @@ describe('AccountCard', () => {
     } as unknown as AuthApi;
     const store = createAccountStore({ api, local: { readData: () => ({}), applyData: vi.fn() } });
     void store.getState().start();
-    render(<AccountCard store={store} google={false} />);
+    render(<MemoryRouter><AccountCard store={store} google={false} /></MemoryRouter>);
     expect(await screen.findByLabelText('Email')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Tiếp tục với Google' })).toBeNull();
   });
@@ -75,25 +76,47 @@ describe('AccountCard', () => {
     fireEvent.change(screen.getByLabelText(/Mật khẩu/), { target: { value: 'secret-pass' } });
     fireEvent.click(screen.getByRole('button', { name: 'Đăng nhập' }));
     expect(await screen.findByText(/Lý do từ máy chủ: Invalid login credentials/)).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('bấm Đăng ký trước');
+    expect(screen.getByRole('status')).toHaveTextContent('Chưa có tài khoản thì hãy đăng ký trước');
+    expect(screen.getByRole('link', { name: 'Tạo tài khoản' })).toHaveAttribute('href', '/register');
   });
 
-  it('sign up asks to confirm the email', async () => {
+  it('the sign-in form only signs in; creating an account is a link to the sign-up page', async () => {
     setup();
-    await screen.findByRole('button', { name: 'Đăng ký' });
+    await screen.findByRole('button', { name: 'Đăng nhập' });
+    expect(screen.queryByRole('button', { name: /Đăng ký|Tạo tài khoản/ })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Tạo tài khoản' })).toHaveAttribute('href', '/register');
+  });
+
+  const fillRegister = (password: string, again: string) => {
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'an@example.com' } });
-    fireEvent.change(screen.getByLabelText(/Mật khẩu/), { target: { value: 'secret-pass' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Đăng ký' }));
+    fireEvent.change(screen.getByLabelText(/Mật khẩu/), { target: { value: password } });
+    fireEvent.change(screen.getByLabelText('Nhập lại mật khẩu'), { target: { value: again } });
+    fireEvent.click(screen.getByRole('button', { name: 'Tạo tài khoản' }));
+  };
+
+  it('sign-up page: creates the account and links back to sign in', async () => {
+    const { api } = setup({}, null, 'register');
+    await screen.findByRole('button', { name: 'Tạo tài khoản' });
+    expect(screen.queryByRole('button', { name: 'Đăng nhập' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Đăng nhập' })).toHaveAttribute('href', '/login');
+    fillRegister('secret-pass', 'secret-pass');
+    await waitFor(() => expect(api.signUp).toHaveBeenCalledWith('an@example.com', 'secret-pass'));
     expect(await screen.findByText(/xác nhận tài khoản/)).toBeInTheDocument();
   });
 
-  it('sign up stays disabled until the email and an 8-character password are filled', async () => {
-    setup();
-    const signUp = await screen.findByRole('button', { name: 'Đăng ký' });
-    expect(signUp).toBeDisabled();
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'an@example.com' } });
-    fireEvent.change(screen.getByLabelText(/Mật khẩu/), { target: { value: 'short' } });
-    expect(signUp).toBeDisabled();
+  it('sign-up page: the two passwords must match', async () => {
+    const { api } = setup({}, null, 'register');
+    await screen.findByRole('button', { name: 'Tạo tài khoản' });
+    fillRegister('secret-pass', 'secret-pazz');
+    expect(screen.getByRole('alert')).toHaveTextContent('không khớp');
+    expect(api.signUp).not.toHaveBeenCalled();
+  });
+
+  it('sign-up page: an email that already has an account is told to sign in', async () => {
+    setup({ signUp: vi.fn(async () => { throw new Error('User already registered'); }) }, null, 'register');
+    await screen.findByRole('button', { name: 'Tạo tài khoản' });
+    fillRegister('secret-pass', 'secret-pass');
+    expect(await screen.findByRole('status')).toHaveTextContent('đã có tài khoản');
   });
 
   it('signed in: shows the account, syncs and can sign out', async () => {

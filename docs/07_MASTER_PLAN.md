@@ -246,7 +246,9 @@ Phase 2 và phần còn lại của Phase 3 (Skill Tree, Lesson Player đầy đ
 | ☐ | P5-10 | Chuyển ADR nháp thành ADR chính thức sau khi người dùng duyệt quy tắc gộp và câu chữ quyền riêng tư | `docs/` | — |
 | ☐ | P5-11 | E2E đăng nhập giả (Supabase giả lập) và privacy E2E cho trạng thái đã đăng nhập | `e2e/` | AC-PRIV-01, AC-ACC-03 |
 | ☐ | P5-12 | Trước khi có người dùng thật: bật lại "Confirm email" + SMTP riêng; cân nhắc giới hạn XP/ngày, lọc tên hiển thị | Supabase, `sync/` | — |
+| ☑ | P5-14 | Trang `/register` riêng: đăng ký trước rồi mới đăng nhập; form đăng nhập bỏ nút Đăng ký, thêm link "Tạo tài khoản"; nhập lại mật khẩu phải khớp | `features/account/AccountCard.tsx`, `LoginPage.tsx`, `app/App.tsx`, `i18n/vi.ts` | Unit ✅; xem trên trình duyệt ✅ |
 | ☑ | P5-13 | Bảng xếp hạng khi chưa đăng nhập chỉ tới `/login` (trước là Hồ sơ); trang Cách hoạt động và Giới thiệu bỏ nhắc Google, chỉ tới nút Đăng nhập | `i18n/vi.ts`, `features/leaderboard`, `features/onboarding` | Unit ✅ |
+| ◐ | P5-14 | Lộ trình học kiểu bản đồ kẹo: đường kẹo uốn lượn, viên kẹo bài học (số, sao, khóa), 3 vùng màu theo cấp, biển cấp + thanh đếm, cúp đích, trang trí hai bên (seed cố định), thẻ Mục tiêu/Đồng bộ/Chú thích; giữ nguyên trạng thái, ô chi tiết, phím Esc, mục tiêu ngày | `features/skill-tree/*` (`candyLayout.ts`, `CandyDecor.tsx`), `styles/tokens.css`, `index.css`, `i18n/vi.ts` | `candyLayout.test.ts` (đã chạy thật bằng tsc + node: đạt). **Chưa chạy** `pnpm lint/test/typecheck` và E2E a11y (máy agent không cài được npm); cần chạy trước khi merge. Vượt mức 100 dòng/task |
 
 **3 lớp kiểm thử Phase 4:** Unit = micro-benchmark normalizer/classifier (< 2 ms) · Integration = worker ↔ engine protocol; ONNX quantized parity · E2E = perf 60 s, privacy, a11y, dữ liệu cục bộ, smoke trên production.
 

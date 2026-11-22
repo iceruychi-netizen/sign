@@ -100,7 +100,7 @@ Mã tính năng được dùng xuyên suốt ARCH / DATA / CONTRACTS / PLAN. C�
 
 | ID | Tính năng | Mô tả | Ưu tiên | Dữ liệu / Hợp đồng |
 |---|---|---|---|---|
-| FT-ACC-01 | Tài khoản tùy chọn & đồng bộ | Đăng ký/đăng nhập bằng email + mật khẩu (trang `/login`, thẻ Tài khoản ở Hồ sơ, menu tài khoản ở thanh trên); đồng bộ tiến độ giữa các máy theo quy tắc "không mất tiến độ"; đăng xuất; xóa tài khoản. Không đăng nhập vẫn dùng đủ | SHOULD (đã làm) | Supabase `user_backups` (03 §6) · K6 |
+| FT-ACC-01 | Tài khoản tùy chọn & đồng bộ | Đăng ký (trang `/register`) rồi đăng nhập (trang `/login`) bằng email + mật khẩu (cùng thẻ Tài khoản ở Hồ sơ, menu tài khoản ở thanh trên); đồng bộ tiến độ giữa các máy theo quy tắc "không mất tiến độ"; đăng xuất; xóa tài khoản. Không đăng nhập vẫn dùng đủ | SHOULD (đã làm) | Supabase `user_backups` (03 §6) · K6 |
 | FT-ACC-02 | Hồ sơ | Tên hiển thị tùy chọn; XP, chuỗi ngày, lịch hoạt động 12 tuần, độ thành thạo từng chữ | SHOULD | `profile` |
 | FT-ACC-03 | Cài đặt | Âm thanh, mục tiêu XP/ngày, tên hiển thị, camera (giao diện chỉ chế độ sáng) | SHOULD | `settings` |
 | FT-ACC-04 | Nhập / Xóa tiến độ | Nhập file sao lưu từ bản cũ; xóa toàn bộ dữ liệu trên máy. Nút Xuất JSON đã bỏ (2026-11-22) vì tài khoản thay thế việc chuyển máy | SHOULD | 03 §3.6 · K5 |
