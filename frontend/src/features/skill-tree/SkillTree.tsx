@@ -82,28 +82,30 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
       <div aria-hidden="true" className="candy-drift pointer-events-none absolute left-[42%] top-24 opacity-90 [animation-delay:-3s]"><Cloud width={120} /></div>
 
       {/* HUD: goal, sync, legend */}
-      <div className="relative z-10 flex max-w-5xl flex-wrap gap-4 px-6 pt-4 [zoom:0.62] md:[zoom:0.7]">
-        <div className="candy-goal-card flex flex-[1_1_16rem] flex-col gap-2.5 rounded-[1.75rem] border-4 border-surface px-5 py-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black">{t.goal}</h2>
-            <span className="inline-flex size-10 items-center justify-center rounded-full bg-surface text-xp"><BoltIcon className="size-5" /></span>
+      <div className="relative z-10 mx-4 mt-3 flex max-w-4xl flex-wrap items-stretch gap-2.5 md:mx-6">
+        <div className="candy-goal-card flex flex-[2_1_15rem] items-center gap-3 rounded-2xl border-[3px] border-surface px-4 py-2.5">
+          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-surface text-xp"><BoltIcon className="size-5" /></span>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <div className="flex items-baseline justify-between gap-2">
+              <h2 className="text-base font-black">{t.goal}</h2>
+              <p className="text-base font-black">{t.goalValue(today, goal)}</p>
+            </div>
+            <ProgressBar value={today} max={goal} label={t.goal} className="border-surface" />
           </div>
-          <ProgressBar value={today} max={goal} label={t.goal} className="border-surface" />
-          <p className="text-base font-black">{t.goalValue(today, goal)}</p>
         </div>
-        <div className="candy-sync-card flex flex-[1_1_16rem] flex-col gap-2 rounded-[1.75rem] border-4 border-surface px-5 py-4">
-          <div className="flex items-center gap-2.5">
-            <span className="candy-sync-badge inline-flex size-10 items-center justify-center rounded-2xl text-text-on-brand"><ShieldLockIcon className="size-5" /></span>
-            <h2 className="text-lg font-black">{t.sync}</h2>
+        <div className="candy-sync-card flex flex-[1_1_12rem] items-center gap-2.5 rounded-2xl border-[3px] border-surface px-4 py-2.5">
+          <span className="candy-sync-badge inline-flex size-9 shrink-0 items-center justify-center rounded-xl text-text-on-brand"><ShieldLockIcon className="size-5" /></span>
+          <div className="flex min-w-0 flex-col">
+            <h2 className="text-base font-black">{t.sync}</h2>
+            <p className="sr-only">{t.syncText}</p>
+            <Link to="/profile" className="candy-sync-link text-sm font-black underline underline-offset-4">{t.syncLink}</Link>
           </div>
-          <p className="text-[13px] leading-relaxed">{t.syncText}</p>
-          <Link to="/profile" className="candy-sync-link text-sm font-black underline underline-offset-4">{t.syncLink}</Link>
         </div>
-        <div className="candy-legend-card flex flex-[1_1_12rem] flex-col gap-2 rounded-[1.75rem] border-4 border-surface px-5 py-4 text-[13px]">
-          <h2 className="text-lg font-black">{t.legend}</h2>
-          <p className="flex items-center gap-2.5"><span aria-hidden="true" className="candy-node candy-node-available size-6 rounded-full border-2" />{t.legendItems.available}</p>
-          <p className="flex items-center gap-2.5"><span aria-hidden="true" className="candy-node candy-node-completed size-6 rounded-full border-2" />{t.legendItems.completed}</p>
-          <p className="flex items-center gap-2.5"><span aria-hidden="true" className="candy-node candy-node-locked size-6 rounded-full border-2" />{t.legendItems.locked}</p>
+        <div className="candy-legend-card flex flex-[1_1_100%] flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border-[3px] border-surface px-4 py-2 text-sm md:flex-[1_1_auto]">
+          <h2 className="font-black">{t.legend}:</h2>
+          <p className="flex items-center gap-1.5"><span aria-hidden="true" className="candy-node candy-node-available size-4 rounded-full border-2" />{t.legendItems.available}</p>
+          <p className="flex items-center gap-1.5"><span aria-hidden="true" className="candy-node candy-node-completed size-4 rounded-full border-2" />{t.legendItems.completed}</p>
+          <p className="flex items-center gap-1.5"><span aria-hidden="true" className="candy-node candy-node-locked size-4 rounded-full border-2" />{t.legendItems.locked}</p>
         </div>
       </div>
 
@@ -111,7 +113,7 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
       {!data && !failed && <p className="relative z-10 mx-6 mt-6 font-bold text-text">{t.loading}</p>}
 
       {data && (
-        <div className="relative mt-2 [zoom:0.6] md:[zoom:0.66]" style={{ height: map.height }}>
+        <div className="relative mt-2 [zoom:0.58] md:[zoom:0.62]" style={{ height: map.height }}>
           {/* unit worlds, full width */}
           {units.map((unit, ui) => {
             const box = map.units[ui];
