@@ -74,7 +74,7 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
       <h1 className="sr-only">{t.title}</h1>
 
       {/* sky */}
-      <div aria-hidden="true" className="pointer-events-none absolute right-[6%] top-6 size-36">
+      <div aria-hidden="true" className="pointer-events-none absolute right-[6%] top-6 size-28">
         <div className="candy-rays candy-rays-spin absolute -inset-14 rounded-full" />
         <div className="candy-sun absolute inset-5 rounded-full" />
       </div>
@@ -82,7 +82,7 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
       <div aria-hidden="true" className="candy-drift pointer-events-none absolute left-[42%] top-24 opacity-90 [animation-delay:-3s]"><Cloud width={120} /></div>
 
       {/* HUD: goal, sync, legend */}
-      <div className="relative z-10 flex max-w-5xl flex-wrap gap-4 px-6 pt-6 [zoom:0.8]">
+      <div className="relative z-10 flex max-w-5xl flex-wrap gap-4 px-6 pt-4 [zoom:0.62] md:[zoom:0.7]">
         <div className="candy-goal-card flex flex-[1_1_16rem] flex-col gap-2.5 rounded-[1.75rem] border-4 border-surface px-5 py-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-black">{t.goal}</h2>
@@ -111,7 +111,7 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
       {!data && !failed && <p className="relative z-10 mx-6 mt-6 font-bold text-text">{t.loading}</p>}
 
       {data && (
-        <div className="relative mt-4 [zoom:0.72] md:[zoom:0.8]" style={{ height: map.height }}>
+        <div className="relative mt-2 [zoom:0.6] md:[zoom:0.66]" style={{ height: map.height }}>
           {/* unit worlds, full width */}
           {units.map((unit, ui) => {
             const box = map.units[ui];
