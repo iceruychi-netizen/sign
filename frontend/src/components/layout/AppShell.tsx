@@ -127,12 +127,12 @@ export function AppShell({ stats, banner, account }: { stats: Stats; banner?: Re
       <div className="relative z-10 flex min-h-dvh flex-col pb-28 md:min-h-0 md:pb-0">
         <CatEars className="mx-4 -mb-1 h-8 md:hidden" />
         <div className="kw-window mx-2 flex flex-1 flex-col rounded-[1.75rem] md:mx-0">
-          <header className="kw-titlebar sticky top-0 z-20 flex min-h-16 items-center justify-between gap-2 rounded-t-[1.6rem] px-4 py-2 md:px-5">
+          <header className="kw-titlebar sticky top-0 z-20 flex min-h-[3.75rem] items-center justify-between gap-2 rounded-t-[1.6rem] px-4 py-2 md:px-5">
             <Link to="/" className="flex items-center gap-2 md:hidden">
               <BrandMark className="size-8" />
               <span className={`kw-title text-lg font-black tracking-tight ${account ? 'hidden sm:inline' : ''}`}>{vi.appName}</span>
             </Link>
-            <Mascot pose="laptop" motion="breathe" className="hidden h-11 w-auto shrink-0 self-center md:block" />
+            <Mascot pose="laptop" motion="breathe" className="hidden w-11 shrink-0 self-center md:block" />
             <div className="flex items-center gap-2">
               {account}
               <StatChip kind="streak" value={stats.streak} />
