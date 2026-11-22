@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode, SVGProps } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { vi } from '@/i18n/vi';
-import { AmbientBackdrop } from '@/components/ui/AmbientBackdrop';
+import { CatEars, Mascot } from '@/components/ui/Mascot';
 import { AlphabetIcon, BrandMark, HandIcon, HomeIcon, LabIcon, TrophyIcon, UserIcon } from '@/components/ui/Icons';
 import { StatChip } from '@/components/ui/StatChip';
 
@@ -31,10 +31,10 @@ function SidebarNav() {
             to={to}
             aria-label={label}
             className={({ isActive }) =>
-              `group flex min-h-12 items-center gap-3.5 rounded-2xl border-2 px-3.5 py-2 text-sm font-extrabold uppercase tracking-wide transition-[background-color,border-color,color,transform] duration-(--motion-fast) ${
+              `group flex min-h-12 items-center gap-3.5 rounded-2xl border-2 px-3.5 py-2 text-sm font-extrabold tracking-wide transition-[background-color,border-color,color,transform] duration-(--motion-fast) ${
                 isActive
-                  ? 'border-brand-200 bg-brand-50 text-brand-fg shadow-[0_2px_0_var(--brand-200)]'
-                  : 'border-transparent text-text-muted hover:bg-surface-2 hover:text-text'
+                  ? 'border-(--kw-line) bg-brand-50 text-brand-fg shadow-[0_3px_0_var(--kw-line)]'
+                  : 'border-dashed border-transparent text-(--kw-ink) hover:border-(--kw-dash) hover:bg-surface hover:text-brand-fg'
               }`
             }
           >
@@ -68,7 +68,7 @@ function BottomNav() {
             aria-label={label}
             className={({ isActive }) =>
               `flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-full px-0.5 py-1 text-[11px] font-extrabold transition-colors duration-(--motion-fast) ${
-                isActive ? 'text-brand-fg' : 'text-text-muted hover:text-text'
+                isActive ? 'text-brand-fg' : 'text-(--kw-ink) hover:text-brand-fg'
               }`
             }
           >
@@ -91,56 +91,67 @@ function BottomNav() {
   );
 }
 
-/** Desktop: crisp white Duolingo sidebar + themed ASL backdrop + sticky stat bar. Mobile: top bar + floating pill dock. */
+/** Kawaii shell: pastel sky, cream sidebar window with cat ears and Lingo the cat, cream content window, candy dock on mobile. */
 export function AppShell({ stats, banner, account }: { stats: Stats; banner?: ReactNode; account?: ReactNode }) {
   const { pathname } = useLocation();
   return (
-    <div className="relative min-h-dvh bg-bg text-text md:grid md:grid-cols-[16.5rem_1fr]">
-      <AmbientBackdrop variant="app" />
+    <div className="kw-sky relative min-h-dvh text-(--kw-ink) md:grid md:grid-cols-[17rem_1fr] md:gap-4 md:p-4">
+      <div aria-hidden="true" className="kw-clouds pointer-events-none fixed inset-0 z-0" />
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-full focus:border-2 focus:border-brand-300 focus:bg-surface focus:px-4 focus:py-2.5 focus:font-extrabold focus:text-brand-fg"
       >
         {vi.nav.skip}
       </a>
-      <nav aria-label={vi.nav.sidebar} className="sticky top-0 z-20 hidden h-dvh flex-col border-r-2 border-border bg-surface/95 px-4 py-6 backdrop-blur-md md:flex">
-        <Link to="/" className="group mb-7 flex items-center gap-3 rounded-2xl px-2 py-1">
-          <BrandMark className="size-10 transition-transform duration-(--motion-bounce) group-hover:-rotate-6 group-hover:scale-110" />
-          <span className="text-xl font-black tracking-tight text-brand-fg">{vi.appName}</span>
-        </Link>
-        <SidebarNav />
-        <div className="mt-auto border-t border-border/70 pt-3">
-          <Link
-            to="/welcome"
-            className="flex min-h-10 items-center justify-center rounded-2xl px-3 text-xs font-extrabold text-text-muted transition-colors hover:bg-brand-50 hover:text-brand-fg"
-          >
-            ← Trang giới thiệu
+      <div className="sticky top-4 z-20 hidden h-[calc(100dvh-2rem)] flex-col md:flex">
+        <CatEars className="-mb-1 h-9" />
+        <nav aria-label={vi.nav.sidebar} className="kw-window flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.75rem]">
+          <Link to="/" className="kw-titlebar group flex items-center gap-3 px-4 py-3">
+            <BrandMark className="size-9 transition-transform duration-(--motion-bounce) group-hover:-rotate-6 group-hover:scale-110" />
+            <span className="kw-title text-xl font-black tracking-tight">{vi.appName}</span>
           </Link>
+          <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
+            <SidebarNav />
+          </div>
+          <div className="relative flex flex-col items-center border-t-2 border-dashed border-(--kw-line) px-3 pb-3 pt-2">
+            <Mascot pose="wave" motion="sway" className="w-28" />
+            <Link
+              to="/welcome"
+              className="flex min-h-10 items-center justify-center rounded-full px-3 text-xs font-extrabold text-(--kw-ink) transition-colors hover:bg-brand-50 hover:text-brand-fg"
+            >
+              ← Trang giới thiệu
+            </Link>
+          </div>
+        </nav>
+      </div>
+      <div className="relative z-10 flex min-h-dvh flex-col pb-28 md:min-h-0 md:pb-0">
+        <CatEars className="mx-4 -mb-1 h-8 md:hidden" />
+        <div className="kw-window mx-2 flex flex-1 flex-col rounded-[1.75rem] md:mx-0">
+          <header className="kw-titlebar sticky top-0 z-20 flex items-center justify-between gap-2 rounded-t-[1.6rem] px-4 py-2.5 md:px-6">
+            <Link to="/" className="flex items-center gap-2 md:hidden">
+              <BrandMark className="size-8" />
+              <span className={`kw-title text-lg font-black tracking-tight ${account ? 'hidden sm:inline' : ''}`}>{vi.appName}</span>
+            </Link>
+            <Mascot pose="laptop" motion="breathe" className="hidden w-14 md:block" />
+            <div className="flex items-center gap-2">
+              {account}
+              <StatChip kind="streak" value={stats.streak} />
+              <StatChip kind="xp" value={stats.xp} />
+              <StatChip kind="hearts" value={stats.hearts} />
+            </div>
+          </header>
+          {banner}
+          <main id="main" className="flex-1 p-4 md:p-8">
+            <div key={pathname} className="page-enter">
+              <Outlet />
+            </div>
+          </main>
         </div>
-      </nav>
-      <div className="relative z-10 flex min-h-dvh flex-col pb-24 md:pb-0">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b-2 border-border/80 bg-surface/85 px-4 py-2.5 backdrop-blur-xl md:justify-end md:px-8">
-          <Link to="/" className="flex items-center gap-2 md:hidden">
-            <BrandMark className="size-8" />
-            <span className={`text-lg font-black tracking-tight text-brand-fg ${account ? 'hidden sm:inline' : ''}`}>{vi.appName}</span>
-          </Link>
-          <div className="flex items-center gap-2">
-            {account}
-            <StatChip kind="streak" value={stats.streak} />
-            <StatChip kind="xp" value={stats.xp} />
-            <StatChip kind="hearts" value={stats.hearts} />
-          </div>
-        </header>
-        {banner}
-        <main id="main" className="flex-1 p-4 md:p-8">
-          <div key={pathname} className="page-enter">
-            <Outlet />
-          </div>
-        </main>
+        <div aria-hidden="true" className="kw-scallop mx-8 hidden md:block" />
       </div>
       <nav
         aria-label={vi.nav.bottom}
-        className="fixed inset-x-3 bottom-3 z-30 mx-auto max-w-md rounded-full border-2 border-border bg-surface/95 px-2 py-1.5 shadow-(--nav-pill-shadow) backdrop-blur-xl md:hidden"
+        className="kw-window fixed inset-x-3 bottom-3 z-30 mx-auto max-w-md rounded-[1.5rem] px-2 py-1.5 md:hidden"
       >
         <BottomNav />
       </nav>
