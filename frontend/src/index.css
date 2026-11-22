@@ -235,3 +235,56 @@
   .marquee-group:hover .marquee-track { animation-play-state: paused; }
   .scan-beam { animation: scan-sweep 3.2s ease-in-out infinite; }
 }
+
+/* ===== Candy map (learning path) ===== */
+.candy-sky { background-image: var(--candy-sky); }
+.candy-sun { background-image: var(--candy-sun); box-shadow: var(--candy-sun-glow); }
+.candy-rays { background-image: var(--candy-rays); }
+.candy-world-1 { --w-bg: var(--candy-w1-bg); --w-back: var(--candy-w1-back); --w-h1: var(--candy-w1-h1); --w-h2: var(--candy-w1-h2); --w-ribbon: var(--candy-w1-ribbon); --w-lip: var(--candy-w1-lip); --c1: var(--candy-w1-c1); --c2: var(--candy-w1-c2); --c3: var(--candy-w1-c3); --c4: var(--candy-w1-c4); --c5: var(--candy-w1-c5); }
+.candy-world-2 { --w-bg: var(--candy-w2-bg); --w-back: var(--candy-w2-back); --w-h1: var(--candy-w2-h1); --w-h2: var(--candy-w2-h2); --w-ribbon: var(--candy-w2-ribbon); --w-lip: var(--candy-w2-lip); --c1: var(--candy-w2-c1); --c2: var(--candy-w2-c2); --c3: var(--candy-w2-c3); --c4: var(--candy-w2-c4); --c5: var(--candy-w2-c5); }
+.candy-world-3 { --w-bg: var(--candy-w3-bg); --w-back: var(--candy-w3-back); --w-h1: var(--candy-w3-h1); --w-h2: var(--candy-w3-h2); --w-ribbon: var(--candy-w3-ribbon); --w-lip: var(--candy-w3-lip); --c1: var(--candy-w3-c1); --c2: var(--candy-w3-c2); --c3: var(--candy-w3-c3); --c4: var(--candy-w3-c4); --c5: var(--candy-w3-c5); }
+.candy-zone { background-image: var(--w-bg); }
+.candy-zone-dots { background-image: radial-gradient(rgba(255, 255, 255, 0.6) 3px, transparent 3px); background-size: 34px 34px; }
+.candy-ribbon {
+  background-image: var(--w-ribbon);
+  color: var(--candy-white);
+  text-shadow: 0 2px 0 var(--w-lip);
+  box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.35), inset 0 -6px 0 rgba(0, 0, 0, 0.12);
+  clip-path: polygon(0 0, 100% 0, 93% 50%, 100% 100%, 0 100%, 7% 50%);
+}
+.candy-counter { border-color: var(--w-lip); color: var(--w-lip); }
+.candy-counter-fill, .candy-goal-fill { background-image: var(--candy-stripe-gold); }
+.candy-chip { background: var(--w-lip); color: var(--candy-white); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18); }
+.candy-chip-locked { background: var(--candy-locked-chip); color: var(--candy-locked-ink); }
+.candy-tag { background: var(--w-lip); color: var(--candy-white); }
+.candy-tag-locked { background: var(--candy-locked-chip); color: var(--candy-locked-ink); }
+.candy-flag { color: var(--w-lip); box-shadow: 0 3px 0 var(--w-lip); }
+.candy-gate { background-image: var(--w-ribbon); box-shadow: 0 6px 0 var(--w-lip); }
+.candy-gate-done { background-image: var(--candy-node-completed); box-shadow: 0 6px 0 var(--candy-node-completed-lip); }
+.candy-node { border: 6px solid var(--candy-white); }
+.candy-node-available { background-image: var(--candy-node-available); box-shadow: var(--candy-node-available-shadow); }
+.candy-node-completed { background-image: var(--candy-node-completed); box-shadow: var(--candy-node-completed-shadow); }
+.candy-node-locked { background-image: var(--candy-node-locked); box-shadow: var(--candy-node-locked-shadow); color: var(--candy-locked-ink); }
+.candy-num-available { color: var(--candy-white); text-shadow: 0 3px 0 var(--candy-node-available-lip); }
+.candy-num-completed { color: var(--candy-white); text-shadow: 0 3px 0 var(--candy-node-completed-lip); }
+.candy-goal-card { background-image: var(--candy-goal-card); box-shadow: var(--candy-goal-shadow); color: var(--candy-goal-ink); }
+.candy-sync-card { background-image: var(--candy-sync-card); box-shadow: var(--candy-sync-shadow); color: var(--candy-sync-ink); }
+.candy-sync-badge { background-image: var(--candy-sync-badge); }
+.candy-sync-link { color: var(--candy-sync-link); }
+.candy-legend-card { background-image: var(--candy-legend-card); box-shadow: var(--candy-legend-shadow); color: var(--candy-legend-ink); }
+.candy-popover { box-shadow: var(--candy-popover-shadow); }
+.candy-popover-locked { box-shadow: var(--candy-popover-locked-shadow); }
+
+@keyframes candy-ring { 0% { transform: scale(0.9); opacity: 0.8; } 100% { transform: scale(1.55); opacity: 0; } }
+@keyframes candy-twinkle { 0%, 100% { opacity: 0.3; transform: scale(0.7) rotate(0deg); } 50% { opacity: 1; transform: scale(1.15) rotate(20deg); } }
+@keyframes candy-drift { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(18px); } }
+@keyframes candy-spin { to { transform: rotate(360deg); } }
+@keyframes candy-bubble { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -8px); } }
+
+@media (prefers-reduced-motion: no-preference) {
+  .candy-ring { animation: candy-ring 1.6s ease-out infinite; }
+  .candy-twinkle { animation: candy-twinkle 2.6s ease-in-out infinite; }
+  .candy-drift { animation: candy-drift 9s ease-in-out infinite; }
+  .candy-rays-spin { animation: candy-spin 60s linear infinite; }
+  .candy-bubble { animation: candy-bubble 1.8s ease-in-out infinite; }
+}
