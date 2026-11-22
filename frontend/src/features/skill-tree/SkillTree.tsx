@@ -70,7 +70,7 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
 
   let g = 0;
   return (
-    <section className="candy-sky relative -m-4 min-h-full overflow-hidden pb-10 md:-m-8">
+    <section className="candy-sky relative -m-4 min-h-full overflow-hidden pb-10 md:-m-6">
       <h1 className="sr-only">{t.title}</h1>
 
       {/* sky */}
@@ -82,7 +82,7 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
       <div aria-hidden="true" className="candy-drift pointer-events-none absolute left-[42%] top-24 opacity-90 [animation-delay:-3s]"><Cloud width={120} /></div>
 
       {/* HUD: goal, sync, legend */}
-      <div className="relative z-10 flex max-w-5xl flex-wrap gap-4 px-6 pt-6">
+      <div className="relative z-10 flex max-w-5xl flex-wrap gap-4 px-6 pt-6 [zoom:0.8]">
         <div className="candy-goal-card flex flex-[1_1_16rem] flex-col gap-2.5 rounded-[1.75rem] border-4 border-surface px-5 py-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-black">{t.goal}</h2>
@@ -111,7 +111,7 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
       {!data && !failed && <p className="relative z-10 mx-6 mt-6 font-bold text-text">{t.loading}</p>}
 
       {data && (
-        <div className="relative mt-6" style={{ height: map.height }}>
+        <div className="relative mt-4 [zoom:0.72] md:[zoom:0.8]" style={{ height: map.height }}>
           {/* unit worlds, full width */}
           {units.map((unit, ui) => {
             const box = map.units[ui];
@@ -193,7 +193,7 @@ export function SkillTree({ load = loadLearnData, now = () => new Date() }: { lo
                       <>
                         <span aria-hidden="true" className="candy-ring absolute left-0 top-0 size-[6.5rem] rounded-full border-[6px] border-surface" />
                         {!expanded && (
-                          <span aria-hidden="true" className="candy-bubble absolute -top-14 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border-4 border-brand-500 bg-surface px-4 py-1.5 text-base font-black text-brand-fg shadow-[0_4px_0_var(--btn-pink-lip)]">
+                          <span aria-hidden="true" className="candy-bubble absolute left-[calc(100%+0.75rem)] top-[3.25rem] -translate-y-1/2 whitespace-nowrap rounded-full border-4 border-brand-500 bg-surface px-3 py-1 text-sm font-black text-brand-fg shadow-[0_4px_0_var(--btn-pink-lip)]">
                             {t.next}
                           </span>
                         )}
