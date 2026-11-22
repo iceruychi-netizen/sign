@@ -320,3 +320,19 @@
 @media (prefers-reduced-motion: reduce) {
   .mascot-hop, .mascot-sway, .mascot-breathe { animation: none; }
 }
+
+/* ---------- "Vào học" transition ---------- */
+@property --lt-r { syntax: '<length>'; inherits: false; initial-value: 0px; }
+.lt-ring { position: fixed; width: 300vmax; height: 300vmax; border-radius: 50%; transform: translate(-50%, -50%) scale(0); animation: lt-spread 1s cubic-bezier(0.3, 0.7, 0.2, 1) forwards; }
+@keyframes lt-spread { to { transform: translate(-50%, -50%) scale(1); } }
+.lt-chip { position: fixed; display: inline-flex; width: 3rem; height: 3rem; margin: -1.5rem 0 0 -1.5rem; align-items: center; justify-content: center; border-radius: 0.9rem; border: 3px solid currentColor; background: var(--surface); font-size: 1.5rem; font-weight: 900; opacity: 0; animation: lt-fly 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+@keyframes lt-fly { 0% { opacity: 0; transform: translate(0, 0) scale(0.3); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.1) rotate(18deg); } }
+.lt-paw { position: fixed; opacity: 0; animation: lt-paw 0.9s ease-out forwards; }
+@keyframes lt-paw { 0% { opacity: 0; transform: scale(0.2); } 40% { opacity: 0.95; transform: scale(1.15); } 100% { opacity: 0.75; transform: scale(1); } }
+.lt-pop { animation: lt-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes lt-pop { 0% { opacity: 0; transform: translateY(60px) scale(0.4); } 100% { opacity: 1; transform: none; } }
+.lt-cover { background: var(--lt-ring-5); }
+.lt-open { -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent var(--lt-r), black calc(var(--lt-r) + 1px)); mask-image: radial-gradient(circle at 50% 50%, transparent var(--lt-r), black calc(var(--lt-r) + 1px)); animation: lt-open 0.85s cubic-bezier(0.6, 0, 0.2, 1) forwards; }
+@keyframes lt-open { to { --lt-r: 150vmax; } }
+.lt-fade { animation: lt-fade 0.4s ease-in forwards; }
+@keyframes lt-fade { to { opacity: 0; transform: scale(0.8); } }

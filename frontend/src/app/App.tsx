@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { LearnTransition } from '@/features/onboarding/LearnTransition';
+import { useLearnTransition } from '@/features/onboarding/learnTransitionStore';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
 import { AppShell } from '@/components/layout/AppShell';
 import { Alphabet } from '@/features/alphabet/Alphabet';
@@ -43,9 +45,10 @@ function ConnectedShell() {
 function useStartApp() {
   const complete = useLearner((s) => s.completeOnboarding);
   const navigate = useNavigate();
+  const play = useLearnTransition((s) => s.play);
   return () => {
     complete();
-    navigate('/learn');
+    play(() => navigate('/learn'));
   };
 }
 
@@ -96,6 +99,8 @@ export function AppRoutes() {
   useGlobalUiSound();
   useScrollToTop();
   return (
+    <>
+    <LearnTransition />
     <Routes>
       <Route index element={<Home />} />
       <Route path="welcome" element={<WelcomeRoute />} />
@@ -120,5 +125,6 @@ export function AppRoutes() {
         <Route path="*" element={<Placeholder title={vi.common.notFound} />} />
       </Route>
     </Routes>
+    </>
   );
 }

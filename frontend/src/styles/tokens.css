@@ -158,6 +158,15 @@
   --kw-card-shadow-hover: 0 6px 0 #f0b3c6, 0 16px 28px -14px rgba(194, 69, 111, 0.35);
   --kw-stripe: repeating-linear-gradient(135deg, #ffc9d8 0 12px, #ffffff 12px 24px);
   --kw-gingham: repeating-linear-gradient(0deg, rgba(255, 201, 216, 0.35) 0 14px, transparent 14px 28px), repeating-linear-gradient(90deg, rgba(255, 201, 216, 0.35) 0 14px, transparent 14px 28px), #fffaf5;
+  /* "Vào học" transition: candy rings that spread from the pressed button */
+  --lt-ring-1: #ffb3cb;
+  --lt-ring-2: #fff0b3;
+  --lt-ring-3: #bfe9d6;
+  --lt-ring-4: #bfe3f7;
+  --lt-ring-5: #ffd9e4;
+  --lt-bubble-line: #c2456f;
+  --lt-bubble-lip: #8f2d52;
+  --lt-bubble-ink: #a8385f;
   --kw-scallop: radial-gradient(circle at 12px 0, #f0b3c6 11px, transparent 12px);
 
   accent-color: var(--brand-600);
